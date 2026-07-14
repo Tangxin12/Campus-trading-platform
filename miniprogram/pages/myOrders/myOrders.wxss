@@ -284,3 +284,11 @@
   font-size: 22rpx;
   color: rgba(255, 255, 255, 0.6);
 }
+
+.rated-tag {
+  font-size: 26rpx;
+  color: #27ae60;
+  padding: 12rpx 32rpx;
+  background: rgba(39, 174, 96, 0.2);
+  border-radius: 30rpx;
+}

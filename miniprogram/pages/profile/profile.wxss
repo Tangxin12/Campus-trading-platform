@@ -7,45 +7,6 @@
   overflow: hidden;
 }
 
-/* 页面标题 */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 30rpx 24rpx;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10rpx);
-  border-bottom: 1rpx solid rgba(255, 255, 255, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  margin: 0 -24rpx;
-  width: calc(100% + 48rpx);
-}
-
-.header-left,
-.header-right {
-  width: 80rpx;
-  display: flex;
-  align-items: center;
-}
-
-.header-left {
-  justify-content: flex-start;
-}
-
-.header-right {
-  justify-content: flex-end;
-}
-
-.page-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.95);
-  flex: 1;
-  text-align: center;
-}
-
 /* 头像部分 */
 .avatar-section {
   display: flex;

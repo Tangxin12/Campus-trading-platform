@@ -1,0 +1,99 @@
+<view class="container">
+  <view class="detail-content" wx:if="{{order}}">
+    <view class="status-card">
+      <text class="status-text {{order.status}}">{{getStatusText(order.status)}}</text>
+      <text class="order-id">订单号: {{order._id}}</text>
+    </view>
+
+    <view class="item-card">
+      <text class="card-title">商品信息</text>
+      <view class="item-info" bindtap="viewItemDetail">
+        <image class="item-image" src="{{order.itemImage}}" mode="aspectFill"></image>
+        <view class="item-detail">
+          <text class="item-name">{{order.itemName}}</text>
+          <text class="item-price">¥{{order.itemPrice}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="user-card">
+      <text class="card-title">交易双方</text>
+      <view class="user-row">
+        <view class="user-item">
+          <image class="user-avatar" src="{{order.sellerAvatar}}" mode="aspectFill"></image>
+          <view class="user-info">
+            <text class="user-name">{{order.sellerName}}</text>
+            <text class="user-role">卖家</text>
+          </view>
+        </view>
+        <view class="arrow">→</view>
+        <view class="user-item">
+          <image class="user-avatar" src="{{order.buyerAvatar}}" mode="aspectFill"></image>
+          <view class="user-info">
+            <text class="user-name">{{order.buyerName}}</text>
+            <text class="user-role">买家</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="time-card">
+      <text class="card-title">交易时间</text>
+      <view class="time-row">
+        <text class="time-label">创建时间</text>
+        <text class="time-value">{{order.createdAt}}</text>
+      </view>
+      <view class="time-row" wx:if="{{order.confirmedAt}}">
+        <text class="time-label">确认时间</text>
+        <text class="time-value">{{order.confirmedAt}}</text>
+      </view>
+      <view class="time-row" wx:if="{{order.completedAt}}">
+        <text class="time-label">完成时间</text>
+        <text class="time-value">{{order.completedAt}}</text>
+      </view>
+    </view>
+
+    <view class="rate-card" wx:if="{{order.status === 'completed'}}">
+      <text class="card-title">评价信息</text>
+      
+      <view class="rate-item" wx:if="{{order.buyerRating}}">
+        <view class="rate-header">
+          <image class="rate-avatar" src="{{order.buyerAvatar}}" mode="aspectFill"></image>
+          <view class="rate-info">
+            <text class="rate-name">{{order.buyerName}}</text>
+            <text class="rate-role">买家评价卖家</text>
+          </view>
+        </view>
+        <view class="rate-stars">
+          <text wx:for="{{5}}" wx:key="index" 
+                style="color: {{index < order.buyerRating ? '#f5a623' : '#ddd'}}; font-size: 32rpx;">★</text>
+        </view>
+        <text class="rate-comment" wx:if="{{order.buyerComment}}">{{order.buyerComment}}</text>
+      </view>
+
+      <view class="rate-item" wx:if="{{order.sellerRating}}">
+        <view class="rate-header">
+          <image class="rate-avatar" src="{{order.sellerAvatar}}" mode="aspectFill"></image>
+          <view class="rate-info">
+            <text class="rate-name">{{order.sellerName}}</text>
+            <text class="rate-role">卖家评价买家</text>
+          </view>
+        </view>
+        <view class="rate-stars">
+          <text wx:for="{{5}}" wx:key="index" 
+                style="color: {{index < order.sellerRating ? '#f5a623' : '#ddd'}}; font-size: 32rpx;">★</text>
+        </view>
+        <text class="rate-comment" wx:if="{{order.sellerComment}}">{{order.sellerComment}}</text>
+      </view>
+
+      <view class="no-rate" wx:if="{{!order.buyerRating && !order.sellerRating}}">
+        <text>暂无评价</text>
+      </view>
+    </view>
+
+    <view class="action-area">
+      <button class="action-btn" bindtap="contactUser">联系对方</button>
+      <button class="action-btn primary" bindtap="goBack">返回</button>
+    </view>
+  </view>
+</view>

@@ -10,13 +10,16 @@ Page({
     },
   
     onLoad: function() {
-      // 获取用户信息（确保包含 _id）
-      const userInfo = wx.getStorageSync('userInfo');
-      this.setData({ userInfo });
-      
-      // 加载订单列表
-      this.loadOrders();
-    },
+    // 获取用户信息（确保包含 _id）
+    const userInfo = wx.getStorageSync('userInfo');
+    console.log('【订单页】userInfo:', userInfo);
+    console.log('【订单页】userInfo._id:', userInfo ? userInfo._id : 'undefined');
+    console.log('【订单页】userInfo._id类型:', userInfo ? typeof userInfo._id : 'undefined');
+    this.setData({ userInfo });
+    
+    // 加载订单列表
+    this.loadOrders();
+  },
   
     onShow: function() {
       // 每次显示页面时刷新订单
@@ -133,6 +136,15 @@ Page({
         if (res.result.success) {
           let newOrders = res.result.data.orders;
           console.log('【订单调试】获取到订单:', newOrders.length, '条');
+          
+          // 显示调试信息
+          if (res.result.debug) {
+            console.log('【订单调试】调试信息:', res.result.debug);
+            console.log('【订单调试】数据库中订单总数:', res.result.debug.totalOrdersInDB);
+            console.log('【订单调试】收到的userId:', res.result.debug.userId);
+            console.log('【订单调试】当前用户OPENID:', res.result.debug.openId);
+            console.log('【订单调试】订单样本:', res.result.debug.sampleOrders);
+          }
           
           // 转换订单中的所有图片链接（复用首页逻辑）
           this.convertOrderImageUrls(newOrders).then(convertedOrders => {
@@ -267,8 +279,13 @@ Page({
             title: '操作成功',
             icon: 'success'
           });
-          // 从本地数组中移除该订单
-          const orders = this.data.orders.filter(order => order._id !== orderId);
+          // 更新本地订单状态，不移除订单，让评价按钮显示出来
+          const orders = this.data.orders.map(order => {
+            if (order._id === orderId) {
+              return Object.assign({}, order, { status: status });
+            }
+            return order;
+          });
           this.setData({ orders: orders });
         } else {
           wx.showToast({

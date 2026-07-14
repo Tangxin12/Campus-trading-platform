@@ -1,0 +1,61 @@
+<view class="container">
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <image src="/images/fh.png" mode="aspectFill" style="width: 28rpx; height: 28rpx;"></image>
+    </view>
+    <text class="page-title">评价</text>
+    <view class="header-right"></view>
+  </view>
+
+  <view class="rate-content">
+    <view class="info-card">
+      <view class="item-info">
+        <image class="item-image" src="{{order.itemImage}}" mode="aspectFill"></image>
+        <view class="item-detail">
+          <text class="item-name">{{order.itemName}}</text>
+          <text class="item-price">¥{{order.itemPrice}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="rate-card">
+      <view class="rate-header">
+        <image class="target-avatar" src="{{targetUserAvatar}}" mode="aspectFill"></image>
+        <view class="target-info">
+          <text class="target-name">{{targetUserName}}</text>
+          <text class="target-role">{{isSeller ? '买家' : '卖家'}}</text>
+        </view>
+      </view>
+
+      <view class="star-section">
+        <text class="star-label">评分</text>
+        <view class="star-container">
+          <view class="star" wx:for="{{5}}" wx:key="index" 
+                bindtap="selectStar" data-index="{{index}}"
+                style="color: {{index < currentRating ? '#f5a623' : '#ddd'}};">
+            ★
+          </view>
+        </view>
+        <text class="rating-text">{{currentRating}}.0分</text>
+      </view>
+
+      <view class="comment-section">
+        <text class="comment-label">评价内容</text>
+        <textarea class="comment-input" placeholder="请输入您的评价..." 
+                  value="{{comment}}" bindinput="onCommentInput" maxlength="200">
+        </textarea>
+      </view>
+
+      <view class="submit-btn" bindtap="submitRate">提交评价</view>
+    </view>
+
+    <view class="tips-card">
+      <text class="tips-title">评价规则</text>
+      <view class="tips-list">
+        <text>• 请客观真实地评价对方</text>
+        <text>• 评价内容将对双方可见</text>
+        <text>• 评价提交后不可修改</text>
+      </view>
+    </view>
+  </view>
+</view>

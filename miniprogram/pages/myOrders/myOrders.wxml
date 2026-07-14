@@ -81,6 +81,7 @@
               <button class="action-btn" bindtap="deleteOrder" data-id="{{item._id}}">删除订单</button>
             </block>
             <block wx:else>
+              <button class="action-btn primary" bindtap="completeOrder" data-id="{{item._id}}">确认完成</button>
               <button class="action-btn" bindtap="deleteOrder" data-id="{{item._id}}">删除订单</button>
             </block>
           </block>
@@ -95,6 +96,9 @@
           <block wx:if="{{item.status === 'completed'}}">
             <block wx:if="{{!hasRated(item)}}">
               <button class="action-btn primary" bindtap="rateOrder" data-id="{{item._id}}">评价</button>
+            </block>
+            <block wx:else>
+              <view class="rated-tag">已评价</view>
             </block>
             <button class="action-btn" bindtap="viewDetail" data-id="{{item._id}}">查看详情</button>
           </block>

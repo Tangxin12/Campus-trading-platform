@@ -42,7 +42,13 @@ exports.main = async (event, context) => {
 // 创建订单
 const createOrder = async (event) => {
   try {
+    console.log('【创建订单】收到的event:', JSON.stringify(event));
+    
     const { itemId, sellerId, buyerId, buyerInfo, itemName, itemImage, itemPrice, sellerName, sellerAvatar } = event;
+    
+    console.log('【创建订单】解析后的参数:', {
+      itemId, sellerId, buyerId, buyerInfo, itemName, itemImage, itemPrice, sellerName, sellerAvatar
+    });
     
     // 处理买家信息
     let buyer;
@@ -65,7 +71,12 @@ const createOrder = async (event) => {
     if (!buyer._id || !itemId || !sellerId) {
       return {
         success: false,
-        message: '缺少必填参数（买家ID/物品ID/卖家ID）'
+        message: '缺少必填参数（买家ID/物品ID/卖家ID）',
+        debug: {
+          buyerId: buyer._id,
+          itemId: itemId,
+          sellerId: sellerId
+        }
       };
     }
     
@@ -75,10 +86,10 @@ const createOrder = async (event) => {
       itemName: (itemName || '物品').trim(),
       itemImage: (itemImage || '').trim(),
       itemPrice: Number(itemPrice) || 0,
-      sellerId: String(sellerId).trim(), // 存储卖家 _id
+      sellerId: String(sellerId).trim(),
       sellerName: (sellerName || '匿名用户').trim(),
       sellerAvatar: (sellerAvatar || '').trim(),
-      buyerId: String(buyer._id).trim(), // 存储买家 _id
+      buyerId: String(buyer._id).trim(),
       buyerName: (buyer.username || '买家').trim(),
       buyerAvatar: (buyer.avatar || '').trim(),
       status: 'pending',
@@ -86,8 +97,14 @@ const createOrder = async (event) => {
       updatedAt: db.serverDate()
     };
     
-    // 直接创建订单
-    const result = await db.collection('exchangeOrders').add(orderData);
+    console.log('【创建订单】要写入的orderData:', JSON.stringify(orderData));
+    
+    // 直接创建订单（使用 data 包裹）
+    const result = await db.collection('exchangeOrders').add({
+      data: orderData
+    });
+    
+    console.log('【创建订单】成功，result:', JSON.stringify(result));
     
     return {
       success: true,
@@ -111,49 +128,45 @@ const createOrder = async (event) => {
 const getOrders = async (event) => {
   const { status, page = 1, pageSize = 10, userId } = event;
   
-  // 核心：只使用前端传递的 userId（即 users 表的 _id）
-  if (!userId) {
-    return {
-      success: true, // 返回成功，避免前端弹错
-      data: {
-        orders: [],
-        total: 0,
-        page: page,
-        pageSize: pageSize
-      }
-    };
+  // 查询所有订单（不限制）
+  const allOrders = await db.collection('exchangeOrders').get();
+  const totalCount = allOrders.data.length;
+  
+  let matchedOrders = [];
+  
+  if (totalCount > 0) {
+    // 临时：直接返回所有订单（不做任何过滤），验证数据是否存在
+    matchedOrders = allOrders.data;
+    
+    // 排序和分页
+    matchedOrders.sort((a, b) => {
+      const timeA = a.createdAt ? (a.createdAt.$date || a.createdAt) : 0;
+      const timeB = b.createdAt ? (b.createdAt.$date || b.createdAt) : 0;
+      return timeB - timeA;
+    });
+    
+    const start = (page - 1) * pageSize;
+    matchedOrders = matchedOrders.slice(start, start + pageSize);
   }
-  
-  // 构建查询条件：只匹配 userId（_id）
-  let whereCondition = {
-    $or: [
-      { sellerId: userId }, // 卖家 _id 匹配
-      { buyerId: userId }   // 买家 _id 匹配
-    ]
-  };
-  
-  // 状态筛选
-  if (status && status !== '' && status !== 'all') {
-    whereCondition.status = status;
-  }
-  
-  // 查询总数和订单列表
-  const countRes = await db.collection('exchangeOrders')
-    .where(whereCondition)
-    .count();
-  
-  const ordersRes = await db.collection('exchangeOrders')
-    .where(whereCondition)
-    .orderBy('createdAt', 'desc')
-    .skip((page - 1) * pageSize)
-    .limit(pageSize)
-    .get();
   
   return {
     success: true,
+    debug: {
+      totalOrdersInDB: totalCount,
+      receivedUserId: userId,
+      userIdType: typeof userId,
+      sampleOrders: allOrders.data.slice(0, 5).map(o => ({
+        _id: o._id,
+        sellerId: o.sellerId,
+        buyerId: o.buyerId,
+        status: o.status,
+        sellerIdType: typeof o.sellerId,
+        buyerIdType: typeof o.buyerId
+      }))
+    },
     data: {
-      orders: ordersRes.data,
-      total: countRes.total,
+      orders: matchedOrders,
+      total: matchedOrders.length,
       page: page,
       pageSize: pageSize
     }
@@ -180,10 +193,40 @@ const getOrderDetail = async (event) => {
     };
   }
   
+  const order = orderRes.data;
+  
+  const formatDate = (date) => {
+    if (!date) return '';
+    let d;
+    if (date instanceof Date) {
+      d = date;
+    } else if (date.$date) {
+      d = new Date(date.$date);
+    } else if (typeof date === 'string') {
+      d = new Date(date.replace(/\(中国标准时间\)/g, ''));
+    } else if (typeof date === 'number') {
+      d = new Date(date);
+    } else {
+      d = new Date(date);
+    }
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    const hour = d.getHours().toString().padStart(2, '0');
+    const minute = d.getMinutes().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${minute}`;
+  };
+  
+  order.createdAt = formatDate(order.createdAt);
+  order.confirmedAt = formatDate(order.confirmedAt);
+  order.completedAt = formatDate(order.completedAt);
+  order.updatedAt = formatDate(order.updatedAt);
+  
   return {
     success: true,
     data: {
-      order: orderRes.data
+      order: order
     }
   };
 };
@@ -237,17 +280,18 @@ const updateOrderStatus = async (event) => {
       };
     }
   } else if (status === 'completed') {
-    // 买卖双方都可以标记完成
+    // 买卖双方都可以标记完成（允许直接从待确认变为已完成）
     if (order.sellerId !== userId && order.buyerId !== userId) {
       return {
         success: false,
-        message: '无权操作此订单'
+        message: '只有交易双方可以完成订单'
       };
     }
-    if (order.status !== 'confirmed') {
+    // 允许从待确认或已确认状态变为已完成
+    if (order.status !== 'pending' && order.status !== 'confirmed') {
       return {
         success: false,
-        message: '只有已确认的订单可以标记完成'
+        message: '只有待确认或已确认的订单可以标记完成'
       };
     }
   } else if (status === 'cancelled') {

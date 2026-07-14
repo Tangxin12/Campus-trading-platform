@@ -1,13 +1,4 @@
 <view class="container">
-  <!-- 页面标题 -->
-  <view class="page-header">
-    <view class="header-left" bindtap="goBack">
-        <image src="/images/fh.png" mode="aspectFill" style="width: 28rpx; height: 28rpx;"></image>
-    </view>
-    <text class="page-title">编辑个人资料</text>
-    <view class="header-right"></view>
-  </view>
-  
   <!-- 个人头像 -->
   <view class="avatar-section">
     <view class="avatar-container" bindtap="chooseAvatar">
