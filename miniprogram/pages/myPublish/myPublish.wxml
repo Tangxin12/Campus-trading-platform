@@ -1,0 +1,51 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <image src="/images/fh.png" mode="aspectFill" style="width: 28rpx; height: 28rpx;"></image>
+    </view>
+    <text class="page-title">我的发布</text>
+    <view class="header-right"></view>
+  </view>
+  
+  <!-- 发布列表 -->
+  <scroll-view class="publish-list" scroll-y="true">
+    <block wx:if="{{publishItems.length === 0}}">
+      <view class="empty-state">
+        <text style="font-size:60rpx;">📦</text>
+        <text class="empty-text">暂无发布</text>
+        <text class="empty-subtext">发布闲置物品，开始你的置换之旅</text>
+        <button class="publish-btn" bindtap="goToPublish">去发布</button>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="publish-item" wx:for="{{publishItems}}" wx:key="_id">
+        <view class="item-image">
+          <image src="{{item.image || item.images[0] || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square'}}" mode="aspectFill"></image>
+        </view>
+        <view class="item-info">
+          <view class="item-name">{{item.name}}</view>
+          <view class="item-price">¥{{item.price}}</view>
+          <view class="item-meta">
+            <text class="item-status">{{getStatusText(item.status)}}</text>
+            <text class="item-time">{{formatTime(item.createdAt)}}</text>
+          </view>
+        </view>
+        <view class="item-actions">
+          <view class="action-btn" bindtap="viewItemDetail" data-id="{{item._id}}">
+          <text style="font-size:24rpx;">👁️</text>
+            <!-- <image src="/images/view.png" mode="aspectFill" style="width: 24rpx; height: 24rpx;"></image> -->
+          </view>
+          <view class="action-btn" bindtap="editItem" data-id="{{item._id}}">
+            <text style="font-size:24rpx;">✏️</text>
+            <!-- <image src="/images/write.png" mode="aspectFill" style="width: 24rpx; height: 24rpx;"></image> -->
+          </view>
+          <view class="action-btn" bindtap="deleteItem" data-id="{{item._id}}">
+            <text style="font-size:24rpx;">🗑️</text>
+            <!-- <image src="/images/delete.png" mode="aspectFill" style="width: 24rpx; height: 24rpx;"></image> -->
+          </view>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+</view>

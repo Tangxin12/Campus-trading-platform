@@ -1,0 +1,30 @@
+{
+    "permissions": {
+      "openapi": [],
+      "db": {
+        "collection": [
+          {
+            "collection_name": "exchangeOrders",
+            "cmd": ["get", "add", "update", "remove"]
+          },
+          {
+            "collection_name": "users",
+            "cmd": ["get"]
+          },
+          {
+            "collection_name": "exchangeItem",
+            "cmd": ["get"]
+          }
+        ]
+      },
+      "wxcloud": {
+        "resource": [
+          {
+            "env": "*",
+            "path": "*",
+            "action": ["get"]
+          }
+        ]
+      }
+    }
+  }

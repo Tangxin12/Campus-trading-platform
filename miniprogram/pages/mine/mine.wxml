@@ -1,0 +1,94 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <!-- <view class="page-header">
+    <text class="page-title">个人中心</text>
+    <view class="header-actions">
+      <view class="action-btn" bindtap="goSettings">
+        <text style="font-size:24rpx;">⚙️</text>
+      </view>
+    </view>
+  </view> -->
+  
+  <!-- 个人信息区 -->
+  <view class="personal-info-section">
+    <view class="personal-info">
+      <view class="avatar" bindtap="chooseAvatar">
+        <image src="{{userInfo.avatar || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square'}}" mode="aspectFill"></image>
+        <view class="avatar-edit-btn">
+          <text style="font-size:16rpx;">📷</text>
+        </view>
+      </view>
+      <view class="user-info">
+        <view class="user-name">
+          <text>{{userInfo.username || '昵称'}}</text>
+          <view class="verify-badge" wx:if="{{userInfo.isVerified}}">
+            <text style="font-size:20rpx;">✓</text>
+          </view>
+        </view>
+        <view class="user-status">
+          <text wx:if="{{userInfo.isVerified && userInfo.college && userInfo.major}}">{{userInfo.college}} {{userInfo.major}}</text>
+          <text wx:else>信息未完善</text>
+        </view>
+      </view>
+      <view class="edit-btn" bindtap="editProfile">
+        <text style="font-size:24rpx;">👤</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 核心功能入口 -->
+  <view class="core-functions-section">
+    <view class="function-grid">
+      <view class="function-item" bindtap="viewMyPublish">
+        <view class="function-icon">
+          <text style="font-size:36rpx;">📝</text>
+        </view>
+        <text class="function-label">我的发布</text>
+      </view>
+      <view class="function-item" bindtap="viewMyCollection">
+        <view class="function-icon">
+          <text style="font-size:36rpx;">💜</text>
+        </view>
+        <text class="function-label">我的收藏</text>
+      </view>
+      <view class="function-item" bindtap="viewMyOrders">
+        <view class="function-icon">
+          <text style="font-size:36rpx;">📋</text>
+        </view>
+        <text class="function-label">我的订单</text>
+      </view>
+      <view class="function-item" bindtap="goVerification">
+        <view class="function-icon">
+          <text style="font-size:36rpx;">{{userInfo.isVerified ? '✅' : '❓'}}</text>
+        </view>
+        <text class="function-label">校园认证</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 工具类入口 -->
+  <view class="tools-section">
+    <view class="section-title">工具与服务</view>
+    <view class="tool-list">
+      <view class="tool-item" bindtap="goHelpCenter">
+        <view class="tool-icon">
+          <text style="font-size:28rpx;">❓</text>
+        </view>
+        <text class="tool-label">帮助中心</text>
+        <icon type="arrowright" size="24" color="rgba(255,255,255,0.6)"></icon>
+      </view>
+      <view class="tool-item" bindtap="goAboutUs">
+        <view class="tool-icon">
+          <text style="font-size:28rpx;">ℹ️</text>
+        </view>
+        <text class="tool-label">关于我们</text>
+        <icon type="arrowright" size="24" color="rgba(255,255,255,0.6)"></icon>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+</view>

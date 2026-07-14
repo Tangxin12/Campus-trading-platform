@@ -1,0 +1,91 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">用户注册</text>
+  </view>
+  
+  <!-- 注册表单 -->
+  <view class="register-form">
+    <!-- 用户名输入 -->
+    <view class="form-item">
+      <view class="form-label">用户名</view>
+      <input 
+        class="form-input" 
+        placeholder="请设置用户名" 
+        placeholder-style="color: rgba(255,255,255,0.6)" 
+        value="{{username}}" 
+        bindinput="onUsernameChange"
+        maxlength="20"
+      ></input>
+    </view>
+    
+    <!-- 密码输入 -->
+    <view class="form-item">
+      <view class="form-label">密码</view>
+      <view class="password-input-container">
+        <input 
+          class="form-input password-input" 
+          placeholder="请设置密码（6-20位）" 
+          placeholder-style="color: rgba(255,255,255,0.6)" 
+          value="{{password}}" 
+          bindinput="onPasswordChange"
+          password
+        ></input>
+        <view class="password-toggle" bindtap="togglePasswordVisible">
+          <text style="font-size:24rpx;">{{passwordVisible ? '👁️' : '👁️‍🗨️'}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 确认密码 -->
+    <view class="form-item">
+      <view class="form-label">确认密码</view>
+      <view class="password-input-container">
+        <input 
+          class="form-input password-input" 
+          placeholder="请确认密码" 
+          placeholder-style="color: rgba(255,255,255,0.6)" 
+          value="{{confirmPassword}}" 
+          bindinput="onConfirmPasswordChange"
+          password
+        ></input>
+        <view class="password-toggle" bindtap="toggleConfirmPasswordVisible">
+          <text style="font-size:24rpx;">{{confirmPasswordVisible ? '👁️' : '👁️‍🗨️'}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 昵称输入 -->
+    <view class="form-item">
+      <view class="form-label">昵称</view>
+      <input 
+        class="form-input" 
+        placeholder="请设置昵称" 
+        placeholder-style="color: rgba(255,255,255,0.6)" 
+        value="{{nickname}}" 
+        bindinput="onNicknameChange"
+        maxlength="20"
+      ></input>
+    </view>
+    
+    <!-- 注册按钮 -->
+    <button class="register-btn" bindtap="register">注册</button>
+    
+    <!-- 登录链接 -->
+    <view class="login-link">
+      <text>已有账号？</text>
+      <text class="login-btn" bindtap="goLogin">立即登录</text>
+    </view>
+  </view>
+  
+  <!-- 用户协议 -->
+  <view class="user-agreement">
+    <checkbox-group bindchange="onAgreementChange">
+      <checkbox value="agreement" checked="{{agreementChecked}}"></checkbox>
+      <text>我已阅读并同意</text>
+      <text class="agreement-link" bindtap="goUserAgreement">《用户协议》</text>
+      <text>和</text>
+      <text class="agreement-link" bindtap="goPrivacyPolicy">《隐私政策》</text>
+    </checkbox-group>
+  </view>
+</view>

@@ -1,0 +1,85 @@
+<view class="container">
+  <!-- 返回按钮 -->
+  <view class="back-btn" bindtap="goBack">
+    <text class="back-arrow">‹</text>
+  </view>
+  
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">与 {{userName}} 的聊天</text>
+  </view>
+  
+  <!-- 聊天消息区域 -->
+  <scroll-view class="chat-content" scroll-y="true" style="height: calc(100vh - 240rpx);" bindscrolltolower="loadMoreMessages">
+    <!-- 系统消息 -->
+    <view class="system-message">
+      <text>开始与 {{userName}} 的置换沟通</text>
+    </view>
+    
+    <!-- 对方消息 -->
+    <view class="message-row" wx:for="{{messages}}" wx:key="index">
+      <view class="message-item" wx:if="{{item.type === 'received'}}">
+        <view class="avatar">
+          <image src="{{userAvatar}}" mode="aspectFill"></image>
+        </view>
+        <view class="message-content">
+          <view class="message-text">{{item.content}}</view>
+          <view class="message-time">{{item.time}}</view>
+        </view>
+      </view>
+      
+      <!-- 自己的消息 -->
+      <view class="message-item self-message" wx:else>
+        <view class="message-content">
+          <view class="message-text">{{item.content}}</view>
+          <view class="message-time">{{item.time}}</view>
+        </view>
+        <view class="avatar">
+          <image src="{{myAvatar}}" mode="aspectFill"></image>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 物品卡片 -->
+    <view class="item-card" wx:if="{{showItemCard}}">
+      <view class="item-header">
+        <text class="item-title">置换物品</text>
+        <view class="item-status" wx:if="{{itemStatus === 'pending'}}">待确认</view>
+        <view class="item-status confirmed" wx:elif="{{itemStatus === 'confirmed'}}">已确认</view>
+        <view class="item-status completed" wx:else>已完成</view>
+      </view>
+      <view class="item-info">
+        <image src="{{itemImage}}" mode="aspectFill"></image>
+        <view class="item-details">
+          <view class="item-name">{{itemName}}</view>
+          <view class="item-price">¥{{itemPrice}}</view>
+          <view class="item-condition">{{itemCondition}}</view>
+        </view>
+      </view>
+      <view class="item-actions">
+        <button class="action-btn" bindtap="viewItemDetail">查看详情</button>
+        <button class="action-btn primary" bindtap="createOrder" wx:if="{{!isSeller}}">发起交易</button>
+      </view>
+    </view>
+  </scroll-view>
+  
+  <!-- 快捷语提示 -->
+  <view class="quick-phrases" wx:if="{{showQuickPhrases}}">
+    <text class="quick-phrase" wx:for="{{quickPhrases}}" wx:key="index" bindtap="sendQuickPhrase" data-phrase="{{item}}">{{item}}</text>
+  </view>
+  
+  <!-- 输入区域 -->
+  <view class="input-area">
+    <view class="input-container">
+      <view class="input-wrapper">
+        <input class="input" placeholder="输入消息..." value="{{inputValue}}" bindinput="onInputChange" bindfocus="onInputFocus" bindblur="onInputBlur" bindconfirm="sendMessage"></input>
+        <view class="input-tools">
+          <view class="tool-item" bindtap="toggleQuickPhrases">
+            <text style="font-size:24rpx;">💬</text>
+          </view>
+        </view>
+      </view>
+      <button class="send-btn" bindtap="sendMessage">发送</button>
+    </view>
+  </view>
+</view>

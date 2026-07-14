@@ -1,0 +1,225 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 顶部测试图片：绑定动态临时链接 -->
+  <!-- <image src="{{testImageUrl}}" mode="widthFix"></image> -->
+
+  <!-- 背景渐变 -->
+  <view class="background-gradient">
+    <view class="decor-element decor-1"></view>
+    <view class="decor-element decor-2"></view>
+    <view class="decor-element decor-3"></view>
+  </view>
+
+  <!-- 顶部导航 -->
+  <view class="top-nav glass-effect">
+    <view class="nav-left">
+      <view class="app-logo">
+        <text class="logo-text">校园置换</text>
+      </view>
+    </view>
+    <view class="nav-center">
+      <view class="search-box">
+        <icon type="search" size="20" color="#fff"></icon>
+        <input 
+          placeholder="搜索物品名称/品类/期望置换物品" 
+          placeholder-style="color:rgba(255,255,255,0.8)" 
+          bindconfirm="onSearch" 
+          bindinput="onInputChange" 
+          value="{{searchKeyword}}"
+        ></input>
+        <view class="search-btn" bindtap="onSearchClick">
+          <text>搜索</text>
+        </view>
+      </view>
+    </view>
+    <view class="nav-right">
+      <view class="location" bindtap="onLocationClick">
+        <icon type="location" size="20" color="#fff"></icon>
+        <text>{{currentCampus}}</text>
+        <icon type="arrowright" size="16" color="#fff"></icon>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类入口 -->
+  <view class="category-nav glass-effect">
+    <scroll-view scroll-x="true" class="category-scroll" show-scrollbar="false">
+      <view class="category-item {{currentCategory === '全部' ? 'active' : ''}}" data-category="全部" bindtap="onCategoryClick">
+        <view class="category-icon all-icon">
+          <text class="icon-text">📋</text>
+        </view>
+        <text>全部</text>
+      </view>
+      <view class="category-item {{currentCategory === '数码产品' ? 'active' : ''}}" data-category="数码产品" bindtap="onCategoryClick">
+        <view class="category-icon digital-icon">
+          <text class="icon-text">📱</text>
+        </view>
+        <text>数码产品</text>
+      </view>
+      <view class="category-item {{currentCategory === '服饰箱包' ? 'active' : ''}}" data-category="服饰箱包" bindtap="onCategoryClick">
+        <view class="category-icon clothing-icon">
+          <text class="icon-text">👗</text>
+        </view>
+        <text>服饰箱包</text>
+      </view>
+      <view class="category-item {{currentCategory === '图书文具' ? 'active' : ''}}" data-category="图书文具" bindtap="onCategoryClick">
+        <view class="category-icon book-icon">
+          <text class="icon-text">📚</text>
+        </view>
+        <text>图书文具</text>
+      </view>
+      <view class="category-item {{currentCategory === '生活用品' ? 'active' : ''}}" data-category="生活用品" bindtap="onCategoryClick">
+        <view class="category-icon life-icon">
+          <text class="icon-text">🏠</text>
+        </view>
+        <text>生活用品</text>
+      </view>
+      <view class="category-item {{currentCategory === '美妆' ? 'active' : ''}}" data-category="美妆" bindtap="onCategoryClick">
+        <view class="category-icon beauty-icon">
+          <text class="icon-text">💄</text>
+        </view>
+        <text>美妆</text>
+      </view>
+      <view class="category-item {{currentCategory === '运动器材' ? 'active' : ''}}" data-category="运动器材" bindtap="onCategoryClick">
+        <view class="category-icon sport-icon">
+          <text class="icon-text">⚽</text>
+        </view>
+        <text>运动器材</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 核心推荐区 -->
+  <view class="core-recommend glass-effect">
+    <!-- 轮播图 -->
+    <view class="swiper-container">
+      <swiper autoplay="true" interval="3000" duration="1000" indicator-dots="true" indicator-color="rgba(255,255,255,0.5)" indicator-active-color="#fff" circular="true">
+        <swiper-item>
+          <image src="https://gd-hbimg.huaban.com/37923c614d0c922f8aa45013bad90b37671063309f654-BLtCEv_fw658" mode="aspectFill"></image>
+          <view class="swiper-overlay">
+            <text class="swiper-title">新学期置换季</text>
+            <text class="swiper-subtitle">发现更多精彩物品</text>
+          </view>
+        </swiper-item>
+        <swiper-item>
+          <image src="https://img95.699pic.com/photo/60119/0434.jpg_wh860.jpg" mode="aspectFill"></image>
+          <view class="swiper-overlay">
+            <text class="swiper-title">环保生活新方式</text>
+            <text class="swiper-subtitle">让闲置物品重获新生</text>
+          </view>
+        </swiper-item>
+        <swiper-item>
+          <image src="https://ts2.tc.mm.bing.net/th/id/OIP-C.KhldPoSzzf_XnYWnM11EdwHaEh?cb=defcachec2&rs=1&pid=ImgDetMain&o=7&rm=3" mode="aspectFill"></image>
+          <view class="swiper-overlay">
+            <text class="swiper-title">校园生活好帮手</text>
+            <text class="swiper-subtitle">轻松置换所需物品</text>
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <!-- 热门置换 -->
+    <view class="hot-section">
+      <view class="section-header">
+        <view class="section-title">热门置换</view>
+        <view class="section-more" bindtap="onMoreHotClick">
+          <text>更多</text>
+          <icon type="arrowright" size="16" color="#fff"></icon>
+        </view>
+      </view>
+      <scroll-view scroll-x="true" class="hot-scroll" show-scrollbar="false">
+        <view class="hot-item" wx:for="{{hotList}}" wx:key="index" data-id="{{item._id || item.id}}" bindtap="onHotItemClick">
+          <image src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=black%20jacket&image_size=square'}}" mode="aspectFill"></image>
+          <view class="hot-item-overlay">
+            <text class="hot-item-count">{{item.likes || 0}}人想换</text>
+          </view>
+        </view>
+       
+       
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 功能快捷入口 -->
+  <!-- <view class="quick-entry glass-effect">
+    <view class="entry-item" bindtap="onPublishClick">
+      <view class="entry-icon">
+        <view class="icon-circle add-circle">
+          <icon type="add" size="32" color="#fff"></icon>
+        </view>
+        <text>发布置换</text>
+      </view>
+    </view>
+    <view class="entry-item" bindtap="onCollectionClick">
+      <view class="entry-icon">
+        <view class="icon-circle star-circle">
+          <icon type="star" size="32" color="#fff"></icon>
+        </view>
+        <text>我的收藏</text>
+      </view>
+    </view>
+    <view class="entry-item" bindtap="onRequestClick">
+      <view class="entry-icon">
+        <view class="icon-circle search-circle">
+          <icon type="search" size="32" color="#fff"></icon>
+        </view>
+        <text>求换专区</text>
+      </view>
+    </view>
+  </view> -->
+
+  <!-- 置换物品列表区 -->
+  <view class="exchange-list glass-effect">
+    <view class="list-header">
+      <view class="section-title">最新置换</view>
+      <view class="filter-buttons">
+        <view class="filter-btn" data-type="category" bindtap="onFilterClick">
+          <text>分类</text>
+          <icon type="arrowdown" size="16" color="#fff"></icon>
+        </view>
+        <view class="filter-btn" data-type="sort" bindtap="onSortClick">
+          <text>最新</text>
+          <icon type="arrowdown" size="16" color="#fff"></icon>
+        </view>
+      </view>
+    </view>
+
+    <!-- 物品列表 -->
+    <view class="goods-list">
+      <view class="goods-item" wx:for="{{goodsList}}" wx:key="index" data-id="{{item._id || item.id}}" bindtap="onGoodsClick">
+        <image src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square'}}" mode="aspectFill"></image>
+        <view class="goods-info">
+          <view class="goods-title">{{item.name || item.title || '物品名称'}}</view>
+          <view class="goods-desc">{{item.description || item.desc || '物品描述'}}</view>
+          <view class="goods-meta">
+            <view class="goods-price">¥{{item.price || '0.00'}}</view>
+            <view class="goods-stats">
+              <icon type="view" size="16" color="rgba(255,255,255,0.7)"></icon>
+              <text class="goods-stat-text">{{item.views || 0}}</text>
+              <icon type="like" size="16" color="rgba(255,255,255,0.7)"></icon>
+              <text class="goods-stat-text">{{item.likes || 0}}</text>
+            </view>
+          </view>
+          <view class="goods-publisher">
+            <image src="{{item.avatar || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square'}}" class="publisher-avatar" mode="scaleToFill"></image>
+            <text class="publisher-name">{{item.publisher || '发布者'}}</text>
+            <!-- <text class="publisher-time">{{item.time || '00:00:00'}}</text> -->
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态提示 -->
+      <view wx:if="{{goodsList.length === 0}}" class="empty-state">
+        <image src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=empty%20state%20illustration%20search%20not%20found&image_size=square" mode="aspectFill"></image>
+        <text class="empty-text">未找到相关物品</text>
+        <text class="empty-desc">试试其他关键词或分类</text>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" bindtap="onLoadMore">
+      <text>加载更多</text>
+      <icon type="loading" size="20" color="#fff"></icon>
+    </view>
+  </view>
+</view> 

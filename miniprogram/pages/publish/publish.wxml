@@ -1,0 +1,149 @@
+<view class="container">
+
+  
+  <!-- 自有物品信息 -->
+  <view class="section">
+    <view class="section-title">
+      <text>自有物品信息</text>
+      <text class="required">*</text>
+    </view>
+    
+    <!-- 物品图片上传 -->
+    <view class="form-item">
+      <view class="form-label">物品图片</view>
+      <view class="upload-container">
+        <view class="upload-list">
+          <view class="upload-item" wx:for="{{images}}" wx:key="index">
+            <image src="{{item}}" mode="aspectFill"></image>
+            <view class="upload-delete" bindtap="deleteImage" data-index="{{index}}">
+              <text>×</text>
+            </view>
+          </view>
+          <view class="upload-btn" wx:if="{{images.length < 9}}" bindtap="chooseImage">
+            <text style="font-size:48rpx;">+</text>
+            <text>{{images.length}}/9</text>
+          </view>
+        </view>
+        <view class="form-hint">最多上传9张图片，支持预览、删除和排序</view>
+      </view>
+    </view>
+    
+    <!-- 物品名称 -->
+    <view class="form-item">
+      <view class="form-label">
+        <text>物品名称</text>
+        <text class="required">*</text>
+      </view>
+      <input class="form-input" placeholder="请输入物品名称" value="{{itemName}}" bindinput="onItemNameChange" maxlength="50"></input>
+      <view class="form-hint">{{itemName.length}}/50</view>
+    </view>
+    
+    <!-- 物品价格 -->
+    <view class="form-item">
+      <view class="form-label">
+        <text>物品价格</text>
+        <text class="required">*</text>
+      </view>
+      <input class="form-input" type="digit" placeholder="请输入物品价格（元）" value="{{price}}" bindinput="onPriceChange"></input>
+    </view>
+    
+    <!-- 物品分类 -->
+    <view class="form-item">
+      <view class="form-label">
+        <text>物品分类</text>
+        <text class="required">*</text>
+      </view>
+      <view class="picker-container" bindtap="showCategoryPicker">
+        <text class="picker-value">{{selectedCategory || '请选择物品分类'}}</text>
+        <icon type="arrowright" size="24" color="rgba(255,255,255,0.6)"></icon>
+      </view>
+    </view>
+    
+    <!-- 新旧程度 -->
+    <view class="form-item">
+      <view class="form-label">
+        <text>新旧程度</text>
+        <text class="required">*</text>
+      </view>
+      <view class="condition-list">
+        <view class="condition-item" wx:for="{{conditions}}" wx:key="index" bindtap="selectCondition" data-condition="{{item}}">
+          <view class="condition-radio {{selectedCondition === item ? 'active' : ''}}">
+            <view class="condition-dot {{selectedCondition === item ? 'active' : ''}}"></view>
+          </view>
+          <text class="condition-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 物品详情描述 -->
+    <view class="form-item">
+      <view class="form-label">物品详情描述</view>
+      <textarea class="form-textarea" placeholder="请描述物品的使用情况、有无损坏等（选填）" value="{{itemDescription}}" bindinput="onItemDescriptionChange" maxlength="500" auto-height></textarea>
+      <view class="form-hint">{{itemDescription.length}}/500</view>
+    </view>
+  </view>
+  
+  <!-- 发布设置 -->
+  <view class="section">
+    <view class="section-title">
+      <text>发布设置</text>
+    </view>
+    
+    <!-- 发布校区 -->
+    <view class="form-item">
+      <view class="form-label">
+        <text>发布校区</text>
+        <text class="required">*</text>
+      </view>
+      <view class="picker-container" bindtap="showCampusPicker">
+        <text class="picker-value">{{selectedCampus || '请选择发布校区'}}</text>
+        <icon type="arrowright" size="24" color="rgba(255,255,255,0.6)"></icon>
+      </view>
+    </view>
+    
+    <!-- 置换方式 -->
+    <view class="form-item">
+      <view class="form-label">
+        <text>置换方式</text>
+        <text class="required">*</text>
+      </view>
+      <view class="exchange-method-list">
+        <view class="exchange-method-item" wx:for="{{exchangeMethods}}" wx:key="index" bindtap="selectExchangeMethod" data-method="{{item}}">
+          <view class="exchange-method-radio {{selectedExchangeMethod === item ? 'active' : ''}}">
+            <view class="exchange-method-dot {{selectedExchangeMethod === item ? 'active' : ''}}"></view>
+          </view>
+          <text class="exchange-method-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 自提/交换地址 -->
+    <view class="form-item">
+      <view class="form-label">自提/交换地址</view>
+      <input class="form-input" placeholder="请输入自提或交换地址，如'XX校区XX宿舍楼'（选填）" value="{{exchangeAddress}}" bindinput="onExchangeAddressChange"></input>
+    </view>
+    
+    <!-- 自动下架时间 -->
+    <view class="form-item">
+      <view class="form-label">自动下架时间</view>
+      <view class="picker-container" bindtap="showOfflineTimePicker">
+        <text class="picker-value">{{selectedOfflineTime || '请选择自动下架时间（可选）'}}</text>
+        <icon type="arrowright" size="24" color="rgba(255,255,255,0.6)"></icon>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 提交发布 -->
+  <view class="submit-section">
+    <!-- <button class="submit-btn draft-btn" bindtap="saveDraft">保存草稿</button> -->
+    <button class="submit-btn publish-btn" bindtap="publishItem">{{isEdit ? '更新' : '发布'}}</button>
+  </view>
+  
+  <!-- 提示信息 -->
+  <view class="tips-section">
+    <text class="tips-title">发布须知：</text>
+    <text class="tips-content">1. 请确保发布的物品信息真实有效</text>
+    <text class="tips-content">2. 禁止发布违规物品和虚假信息</text>
+    <text class="tips-content">3. 置换交易请选择安全的地点</text>
+  </view>
+</view>

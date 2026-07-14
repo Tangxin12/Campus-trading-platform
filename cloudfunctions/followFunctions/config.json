@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "openapi": [],
+    "db": {
+      "collection": [
+        {
+          "collection_name": "follows",
+          "cmd": ["get", "add", "update"]
+        },
+        {
+          "collection_name": "users",
+          "cmd": ["get"]
+        }
+      ]
+    },
+    "wxcloud": {
+      "resource": [
+        {
+          "env": "*",
+          "path": "*",
+          "action": ["get"]
+        }
+      ]
+    }
+  }
+}

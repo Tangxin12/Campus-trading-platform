@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "校园置换",
+  "usingComponents": {
+    "cloud-tip-modal": "/components/cloudTipModal/index"
+  }
+}

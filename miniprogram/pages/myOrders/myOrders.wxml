@@ -1,0 +1,115 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <image src="/images/fh.png" mode="aspectFill" style="width: 28rpx; height: 28rpx;"></image>
+    </view>
+    <text class="page-title">我的订单</text>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 订单状态标签 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">
+      <text>全部</text>
+    </view>
+    <view class="tab-item {{activeTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">
+      <text>待确认</text>
+    </view>
+    <view class="tab-item {{activeTab === 'completed' ? 'active' : ''}}" bindtap="switchTab" data-tab="completed">
+      <text>已完成</text>
+    </view>
+  </view>
+
+  <!-- 订单列表 -->
+  <scroll-view class="order-list" scroll-y="true" bindscrolltolower="loadMore">
+    <block wx:if="{{orders.length === 0}}">
+      <view class="empty-state">
+        <text style="font-size:60rpx;">📋</text>
+        <text class="empty-text">暂无订单</text>
+        <text class="empty-subtext">去浏览物品，发起交易吧</text>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="order-item" wx:for="{{orders}}" wx:key="_id">
+        <!-- 订单头部 -->
+        <view class="order-header">
+          <text class="order-id">订单号: {{item._id}}</text>
+          <text class="order-status {{item.status}}">{{getStatusText(item.status)}}</text>
+        </view>
+
+        <!-- 物品信息 -->
+        <view class="item-info" bindtap="viewItemDetail" data-id="{{item.itemId}}">
+          <image class="item-image" src="{{item.itemImage}}" mode="aspectFill"></image>
+          <view class="item-detail">
+            <text class="item-name">{{item.itemName}}</text>
+            <text class="item-price">¥{{item.itemPrice}}</text>
+          </view>
+        </view>
+
+        <!-- 交易双方 -->
+        <view class="user-info">
+          <view class="user-item">
+            <image class="user-avatar" src="{{item.sellerAvatar}}" mode="aspectFill"></image>
+            <text class="user-name">{{item.sellerName}}</text>
+            <text class="user-role">卖家</text>
+          </view>
+          <view class="exchange-arrow">→</view>
+          <view class="user-item">
+            <image class="user-avatar" src="{{item.buyerAvatar}}" mode="aspectFill"></image>
+            <text class="user-name">{{item.buyerName}}</text>
+            <text class="user-role">买家</text>
+          </view>
+        </view>
+
+        <!-- 交易信息 -->
+        <view class="exchange-info" wx:if="{{item.exchangeLocation}}">
+          <text class="info-label">交易地点:</text>
+          <text class="info-value">{{item.exchangeLocation}}</text>
+        </view>
+        <view class="exchange-info" wx:if="{{item.exchangeTime}}">
+          <text class="info-label">约定时间:</text>
+          <text class="info-value">{{item.exchangeTime}}</text>
+        </view>
+
+        <!-- 订单操作 -->
+        <view class="order-actions">
+          <!-- 待确认状态 -->
+          <block wx:if="{{item.status === 'pending'}}">
+            <block wx:if="{{isSeller(item)}}">
+              <button class="action-btn primary" bindtap="confirmOrder" data-id="{{item._id}}">确认交易</button>
+              <button class="action-btn" bindtap="deleteOrder" data-id="{{item._id}}">删除订单</button>
+            </block>
+            <block wx:else>
+              <button class="action-btn" bindtap="deleteOrder" data-id="{{item._id}}">删除订单</button>
+            </block>
+          </block>
+
+          <!-- 已确认状态 -->
+          <block wx:if="{{item.status === 'confirmed'}}">
+            <button class="action-btn primary" bindtap="completeOrder" data-id="{{item._id}}">确认完成</button>
+            <button class="action-btn" bindtap="contactUser" data-id="{{item._id}}">联系对方</button>
+          </block>
+
+          <!-- 已完成状态 -->
+          <block wx:if="{{item.status === 'completed'}}">
+            <block wx:if="{{!hasRated(item)}}">
+              <button class="action-btn primary" bindtap="rateOrder" data-id="{{item._id}}">评价</button>
+            </block>
+            <button class="action-btn" bindtap="viewDetail" data-id="{{item._id}}">查看详情</button>
+          </block>
+
+          <!-- 已取消状态 -->
+          <block wx:if="{{item.status === 'cancelled'}}">
+            <button class="action-btn" bindtap="deleteOrder" data-id="{{item._id}}">删除订单</button>
+          </block>
+        </view>
+
+        <!-- 订单时间 -->
+        <!-- <view class="order-time">
+          <text>创建时间: {{formatTime(item.createdAt)}}</text>
+        </view> -->
+      </view>
+    </block>
+  </scroll-view>
+</view>

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "发布置换物品",
+  "navigationBarBackgroundColor": "#3498db",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#3498db",
+  "backgroundTextStyle": "light",
+  "enablePullDownRefresh": false,
+  "disableScroll": false
+}

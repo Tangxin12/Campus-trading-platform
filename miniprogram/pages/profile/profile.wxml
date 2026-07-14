@@ -1,0 +1,74 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+        <image src="/images/fh.png" mode="aspectFill" style="width: 28rpx; height: 28rpx;"></image>
+    </view>
+    <text class="page-title">编辑个人资料</text>
+    <view class="header-right"></view>
+  </view>
+  
+  <!-- 个人头像 -->
+  <view class="avatar-section">
+    <view class="avatar-container" bindtap="chooseAvatar">
+      <image src="{{userInfo.avatar || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square'}}" mode="aspectFill"></image>
+      <view class="avatar-edit-btn">
+        <text style="font-size:20rpx;">📷</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 基本信息 -->
+  <view class="info-section">
+    <view class="section-title">基本信息</view>
+    <view class="info-item">
+      <text class="info-label">昵称</text>
+      <input class="info-input" placeholder="请输入昵称" value="{{userInfo.username || ''}}" bindinput="onNicknameChange"></input>
+    </view>
+    <view class="info-item">
+      <text class="info-label">手机号</text>
+      <input class="info-input" placeholder="请输入手机号" value="{{userInfo.phone || ''}}" bindinput="onPhoneChange"></input>
+    </view>
+    <view class="info-item">
+      <text class="info-label">修改密码</text>
+      <input class="info-input" placeholder="请输入新密码" value="{{password || ''}}" bindinput="onPasswordChange" type="password"></input>
+    </view>
+    <view class="info-item">
+      <text class="info-label">确认密码</text>
+      <input class="info-input" placeholder="请确认新密码" value="{{confirmPassword || ''}}" bindinput="onConfirmPasswordChange" type="password"></input>
+    </view>
+  </view>
+  
+  <!-- 个人认证 -->
+  <view class="verification-section" id="verification-section">
+    <view class="section-title">个人认证</view>
+    <view class="info-item">
+            <text class="info-label">学院</text>
+            <input class="info-input" placeholder="请输入学院" value="{{userInfo.college || ''}}" bindinput="onCollegeChange"></input>
+          </view>
+          <view class="info-item">
+            <text class="info-label">专业</text>
+            <input class="info-input" placeholder="请输入专业" value="{{userInfo.major || ''}}" bindinput="onMajorChange"></input>
+          </view>
+          <view class="info-item">
+            <text class="info-label">学号</text>
+            <input class="info-input" placeholder="请输入学号" value="{{userInfo.studentId || ''}}" bindinput="onStudentIdChange"></input>
+          </view>
+    <view class="verification-status">
+      <text class="status-label">认证状态：</text>
+      <text class="status-value" wx:if="{{userInfo.isVerified}}">已认证</text>
+      <text class="status-value unverified" wx:else>未认证</text>
+    </view>
+    <view class="verification-tips">
+      <text class="tips-text">完成个人认证后，您将获得更多权益和信任标识</text>
+    </view>
+    <button class="verification-btn" wx:if="{{!userInfo.isVerified}}" bindtap="startVerification">立即认证</button>
+    <button class="verification-btn verified" wx:else bindtap="viewVerification">认证完成</button>
+  </view>
+  
+  <!-- 保存按钮 -->
+  <view class="save-btn-container">
+    <button class="save-btn" bindtap="saveProfile">保存</button>
+    <!-- <button class="test-btn" bindtap="testCloudFunction" style="margin-top: 20rpx;">测试云函数</button> -->
+  </view>
+</view>
