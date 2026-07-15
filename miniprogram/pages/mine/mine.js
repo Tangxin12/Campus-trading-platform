@@ -178,6 +178,13 @@ Page({
       url: '../myOrders/myOrders'
     });
   },
+
+  // 查看浏览历史
+  viewMyBrowse: function() {
+    wx.navigateTo({
+      url: '../myBrowse/myBrowse'
+    });
+  },
   
   // 查看我的求换
   viewMyRequest: function() {

@@ -13,6 +13,7 @@
     "pages/myCollection/myCollection",
     "pages/myPublish/myPublish",
     "pages/myOrders/myOrders",
+    "pages/myBrowse/myBrowse",
     "pages/orderRate/orderRate",
     "pages/orderDetail/orderDetail"
   ],

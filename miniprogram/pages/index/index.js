@@ -27,6 +27,10 @@ Page({
       ],
       // 热门置换数据
       hotList: [],
+      // 猜你喜欢推荐数据
+      recommendList: [],
+      // 当前推荐标签
+      recommendTab: 'guess',
       // 物品列表数据
       goodsList: [],
       // 加载状态
@@ -45,6 +49,7 @@ Page({
       // 页面加载时初始化
       this.getExchangeItems();
       this.getHotItems();
+      this.getRecommendItems();
       // 加载顶部测试图片
       this.loadTestImage();
     },
@@ -201,6 +206,53 @@ Page({
       }).catch(err => {
         console.error('获取热门物品失败:', err);
       });
+    },
+
+    // 获取猜你喜欢推荐物品
+    getRecommendItems: function() {
+      // 从本地存储获取浏览历史
+      const browseHistory = wx.getStorageSync('browseHistory') || [];
+      
+      // 提取浏览过的分类
+      const categories = [...new Set(browseHistory.map(item => item.category))].filter(Boolean);
+      
+      console.log('【智能推荐】浏览历史分类:', categories);
+      
+      wx.cloud.callFunction({
+        name: 'exchangeFunctions',
+        data: {
+          type: 'getRecommendItems',
+          categories: categories,
+          excludeIds: browseHistory.map(item => item._id),
+          limit: 6
+        }
+      }).then(res => {
+        if (res.result.success) {
+          let items = res.result.data.items;
+          console.log('【智能推荐】获取到推荐物品:', items.length, '条');
+          this.convertImageUrls(items).then(convertedItems => {
+            this.setData({
+              recommendList: convertedItems
+            });
+          });
+        }
+      }).catch(err => {
+        console.error('获取推荐物品失败:', err);
+      });
+    },
+
+    // 切换推荐标签
+    switchRecommendTab: function(e) {
+      const tab = e.currentTarget.dataset.tab;
+      if (tab === this.data.recommendTab) return;
+      
+      this.setData({
+        recommendTab: tab
+      });
+      
+      if (tab === 'guess' && this.data.recommendList.length === 0) {
+        this.getRecommendItems();
+      }
     },
   
     // 搜索功能（修复逻辑+调试日志）
@@ -410,6 +462,10 @@ Page({
     },
     onMoreHotClick() {
       console.log('热门置换更多点击');
+    },
+    onMoreRecommendClick() {
+      console.log('猜你喜欢换一批点击');
+      this.getRecommendItems();
     },
     onFilterClick() {
       console.log('筛选按钮点击');

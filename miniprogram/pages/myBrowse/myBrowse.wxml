@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+        <image src="/images/fh.png" mode="aspectFill" style="width: 28rpx; height: 28rpx;"></image>
+    </view>
+    <text class="page-title">浏览历史</text>
+    <view class="header-right" bindtap="clearHistory">
+      <text class="clear-btn">清空</text>
+    </view>
+  </view>
+  
+  <scroll-view class="browse-list" scroll-y="true">
+    <block wx:if="{{browseHistory.length === 0}}">
+      <view class="empty-state">
+        <text style="font-size:60rpx;">👀</text>
+        <text class="empty-text">暂无浏览记录</text>
+        <text class="empty-subtext">浏览商品后，记录会保存在这里</text>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="browse-item" wx:for="{{browseHistory}}" wx:key="_id">
+        <view class="item-image" bindtap="viewItemDetail" data-id="{{item._id}}">
+          <image 
+            src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square'}}" 
+            mode="aspectFill"
+            lazy-load="true"></image>
+        </view>
+        <view class="item-info" bindtap="viewItemDetail" data-id="{{item._id}}">
+          <view class="item-name">{{item.name || '商品'}}</view>
+          <view class="item-price">¥{{item.price || 0}}</view>
+          <view class="item-time">{{formatTime(item.time)}}</view>
+        </view>
+        <view class="item-actions">
+          <view class="action-btn" bindtap="deleteItem" data-id="{{item._id}}">
+            <text style="font-size:24rpx;">🗑️</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+</view>

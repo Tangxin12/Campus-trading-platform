@@ -118,24 +118,22 @@
       </swiper>
     </view>
 
-    <!-- 热门置换 -->
-    <view class="hot-section">
+    <!-- 为你推荐 -->
+    <view class="recommend-section">
       <view class="section-header">
-        <view class="section-title">热门置换</view>
-        <view class="section-more" bindtap="onMoreHotClick">
-          <text>更多</text>
-          <icon type="arrowright" size="16" color="#fff"></icon>
+        <view class="section-title">为你推荐</view>
+        <view class="recommend-tabs">
+          <view class="recommend-tab {{recommendTab === 'guess' ? 'active' : ''}}" bindtap="switchRecommendTab" data-tab="guess">猜你喜欢</view>
+          <view class="recommend-tab {{recommendTab === 'hot' ? 'active' : ''}}" bindtap="switchRecommendTab" data-tab="hot">热门推荐</view>
         </view>
       </view>
       <scroll-view scroll-x="true" class="hot-scroll" show-scrollbar="false">
-        <view class="hot-item" wx:for="{{hotList}}" wx:key="index" data-id="{{item._id || item.id}}" bindtap="onHotItemClick">
-          <image src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=black%20jacket&image_size=square'}}" mode="aspectFill"></image>
+        <view class="hot-item" wx:for="{{recommendTab === 'guess' ? recommendList : hotList}}" wx:key="index" data-id="{{item._id || item.id}}" bindtap="onHotItemClick">
+          <image src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20recommendation&image_size=square'}}" mode="aspectFill"></image>
           <view class="hot-item-overlay">
-            <text class="hot-item-count">{{item.likes || 0}}人想换</text>
+            <text class="hot-item-count">{{recommendTab === 'guess' ? '¥' + (item.price || 0) : (item.likes || 0) + '人想换'}}</text>
           </view>
         </view>
-       
-       
       </scroll-view>
     </view>
   </view>

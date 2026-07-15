@@ -582,6 +582,69 @@ const getUserPublishItems = async (event) => {
   }
 };
 
+// 智能推荐物品（基于浏览历史、收藏记录、热门商品）
+const getRecommendItems = async (event) => {
+  try {
+    const { categories = [], excludeIds = [], limit = 6 } = event;
+    
+    console.log('【智能推荐】getRecommendItems被调用，categories:', categories, 'excludeIds:', excludeIds);
+    
+    let recommendItems = [];
+    const usedIds = new Set(excludeIds);
+    
+    // 策略1：基于浏览/收藏的分类推荐
+    if (categories && categories.length > 0) {
+      console.log('【智能推荐】策略1：基于分类推荐');
+      for (let i = 0; i < categories.length && recommendItems.length < limit; i++) {
+        const category = categories[i];
+        const categoryItems = await db.collection("exchangeItem").where({
+          status: "active",
+          category: category,
+          _id: _.nin([...usedIds])
+        }).orderBy("likes", "desc").limit(limit - recommendItems.length).get();
+        
+        categoryItems.data.forEach(item => {
+          if (!usedIds.has(item._id)) {
+            usedIds.add(item._id);
+            recommendItems.push(item);
+          }
+        });
+      }
+    }
+    
+    // 策略2：热门商品补充（如果推荐数量不足）
+    if (recommendItems.length < limit) {
+      console.log('【智能推荐】策略2：热门商品补充');
+      const hotItems = await db.collection("exchangeItem").where({
+        status: "active",
+        _id: _.nin([...usedIds])
+      }).orderBy("likes", "desc").orderBy("views", "desc").limit(limit - recommendItems.length).get();
+      
+      hotItems.data.forEach(item => {
+        if (!usedIds.has(item._id)) {
+          recommendItems.push(item);
+        }
+      });
+    }
+    
+    console.log('【智能推荐】推荐结果:', recommendItems.length, '条');
+    
+    return {
+      success: true,
+      data: {
+        items: recommendItems,
+        total: recommendItems.length
+      }
+    };
+  } catch (e) {
+    console.error('【智能推荐】getRecommendItems错误:', e);
+    return {
+      success: false,
+      errMsg: e.message
+    };
+  }
+};
+
 // 删除物品
 const deleteItem = async (event) => {
   try {
@@ -920,6 +983,8 @@ exports.main = async (event, context) => {
       return await getUserCollections(event);
     case "getUserPublishItems":
       return await getUserPublishItems(event);
+    case "getRecommendItems":
+      return await getRecommendItems(event);
     case "deleteItem":
       return await deleteItem(event);
     case "updateItem":

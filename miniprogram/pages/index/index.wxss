@@ -321,6 +321,35 @@
   margin-bottom: 20rpx;
 }
 
+/* 猜你喜欢 */
+.recommend-section {
+  margin-bottom: 20rpx;
+}
+
+/* 推荐标签 */
+.recommend-tabs {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20rpx;
+  padding: 4rpx;
+}
+
+.recommend-tab {
+  padding: 8rpx 20rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 16rpx;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.recommend-tab.active {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-weight: bold;
+}
+
 .hot-scroll {
   white-space: nowrap;
   width: 100%;

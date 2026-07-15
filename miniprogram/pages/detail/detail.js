@@ -32,23 +32,26 @@ Page({
         console.log('【调试】获取详情结果:', res);
         
         if (res.result.success) {
-          let item = res.result.data;
-          console.log('【调试】原始物品数据:', item);
-          
-          // 修复：批量转换所有图片（主图+轮播图数组）
-          this.convertAllImageUrls(item).then(convertedItem => {
-            console.log('【调试】转换后物品数据:', convertedItem);
-            this.setData({
-              item: convertedItem,
-              loading: false
-            });
-            
-            // 检查是否已关注发布者
-            this.checkIsFollowing();
-            // 检查是否已收藏
-            this.checkCollectionStatus();
+        let item = res.result.data;
+        console.log('【调试】原始物品数据:', item);
+        
+        // 修复：批量转换所有图片（主图+轮播图数组）
+        this.convertAllImageUrls(item).then(convertedItem => {
+          console.log('【调试】转换后物品数据:', convertedItem);
+          this.setData({
+            item: convertedItem,
+            loading: false
           });
-        } else {
+          
+          // 检查是否已关注发布者
+          this.checkIsFollowing();
+          // 检查是否已收藏
+          this.checkCollectionStatus();
+          
+          // 记录浏览历史（用于智能推荐）
+          this.recordBrowseHistory(convertedItem);
+        });
+      } else {
           wx.showToast({
             title: res.result.errMsg || '获取物品详情失败',
             icon: 'none'
@@ -336,5 +339,30 @@ Page({
     // 返回上一页
     goBack: function() {
       wx.navigateBack();
+    },
+
+    // 记录浏览历史（用于智能推荐）
+    recordBrowseHistory: function(item) {
+      try {
+        const history = wx.getStorageSync('browseHistory') || [];
+        
+        // 移除重复的物品
+        const filteredHistory = history.filter(h => h._id !== item._id);
+        
+        // 添加新物品到开头
+        const newHistory = [{
+          _id: item._id,
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          image: item.image,
+          time: Date.now()
+        }, ...filteredHistory].slice(0, 20); // 只保留最近20条
+        
+        wx.setStorageSync('browseHistory', newHistory);
+        console.log('【智能推荐】浏览历史记录成功:', newHistory.length, '条');
+      } catch (err) {
+        console.error('【智能推荐】记录浏览历史失败:', err);
+      }
     }
   });
