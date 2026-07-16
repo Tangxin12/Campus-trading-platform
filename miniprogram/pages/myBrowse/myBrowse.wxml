@@ -21,7 +21,7 @@
       <view class="browse-item" wx:for="{{browseHistory}}" wx:key="_id">
         <view class="item-image" bindtap="viewItemDetail" data-id="{{item.itemId}}">
           <image 
-            src="{{item.imageUrl || item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square'}}" 
+            src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square'}}" 
             mode="aspectFill"
             lazy-load="true"></image>
         </view>

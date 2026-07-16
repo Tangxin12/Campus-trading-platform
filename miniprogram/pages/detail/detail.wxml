@@ -9,8 +9,8 @@
     <swiper autoplay="false" indicator-dots="true" indicator-active-color="#fff" circular="true">
       <!-- 修复：item 改为 img，绑定 data-src 传递图片链接 -->
       <swiper-item wx:for="{{item.images || [item.image]}}" wx:key="index" wx:for-item="img">
-        <image src="{{img}}" mode="aspectFill" bindtap="previewImage" data-src="{{img}}"></image>
-      </swiper-item>
+          <image src="{{img}}" mode="aspectFill" bindtap="previewImage" data-index="{{index}}"></image>
+        </swiper-item>
     </swiper>
   </view>
   

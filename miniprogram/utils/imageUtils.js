@@ -23,8 +23,26 @@ const getTempFileUrl = function(fileID) {
   });
 };
 
+const cloneObject = function(obj) {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(function(item) {
+      return cloneObject(item);
+    });
+  }
+  const cloned = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      cloned[key] = cloneObject(obj[key]);
+    }
+  }
+  return cloned;
+};
+
 const convertImageUrls = async function(items) {
-  const list = JSON.parse(JSON.stringify(items));
+  const list = cloneObject(items);
   
   for (let i = 0; i < list.length; i++) {
     const item = list[i];
@@ -52,7 +70,7 @@ const convertImageUrls = async function(items) {
 };
 
 const convertOrderImageUrls = async function(orders) {
-  const list = JSON.parse(JSON.stringify(orders));
+  const list = cloneObject(orders);
   
   for (let i = 0; i < list.length; i++) {
     const order = list[i];
@@ -89,7 +107,7 @@ const convertOrderImageUrls = async function(orders) {
 };
 
 const convertAllImageUrls = async function(item) {
-  const convertedItem = JSON.parse(JSON.stringify(item));
+  const convertedItem = cloneObject(item);
   
   if (convertedItem.image && convertedItem.image.startsWith('cloud://')) {
     try {

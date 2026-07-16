@@ -148,28 +148,65 @@ Page({
       });
     },
 
-    // 获取猜你喜欢推荐物品
+    // 获取猜你喜欢推荐物品（从云数据库读取浏览历史）
     getRecommendItems: function() {
-      // 从本地存储获取浏览历史
-      const browseHistory = wx.getStorageSync('browseHistory') || [];
-      
-      // 提取浏览过的分类
-      const categories = [...new Set(browseHistory.map(item => item.category))].filter(Boolean);
-      
-      console.log('【智能推荐】浏览历史分类:', categories);
+      const userInfo = wx.getStorageSync('userInfo');
       
       wx.cloud.callFunction({
         name: 'exchangeFunctions',
         data: {
+          type: 'getUserBrowseHistory',
+          userId: userInfo ? userInfo._id : ''
+        }
+      }).then(historyRes => {
+        if (historyRes.result.success) {
+          const browseHistory = historyRes.result.data.items || [];
+          const categories = [...new Set(browseHistory.map(item => item.category))].filter(Boolean);
+          const excludeIds = browseHistory.map(item => item.itemId);
+          
+          console.log('【智能推荐】浏览历史分类:', categories);
+          
+          wx.cloud.callFunction({
+            name: 'exchangeFunctions',
+            data: {
+              type: 'getRecommendItems',
+              categories: categories,
+              excludeIds: excludeIds,
+              limit: 6
+            }
+          }).then(res => {
+            if (res.result.success) {
+              let items = res.result.data.items;
+              console.log('【智能推荐】获取到推荐物品:', items.length, '条');
+              imageUtils.convertImageUrls(items).then(convertedItems => {
+                this.setData({
+                  recommendList: convertedItems
+                });
+              });
+            }
+          }).catch(err => {
+            console.error('获取推荐物品失败:', err);
+          });
+        }
+      }).catch(err => {
+        console.error('获取浏览历史失败:', err);
+        this.getHotRecommendItems();
+      });
+    },
+    
+    // 获取热门推荐作为兜底
+    getHotRecommendItems: function() {
+      wx.cloud.callFunction({
+        name: 'exchangeFunctions',
+        data: {
           type: 'getRecommendItems',
-          categories: categories,
-          excludeIds: browseHistory.map(item => item._id),
+          categories: [],
+          excludeIds: [],
           limit: 6
         }
       }).then(res => {
         if (res.result.success) {
           let items = res.result.data.items;
-          console.log('【智能推荐】获取到推荐物品:', items.length, '条');
           imageUtils.convertImageUrls(items).then(convertedItems => {
             this.setData({
               recommendList: convertedItems
@@ -177,7 +214,7 @@ Page({
           });
         }
       }).catch(err => {
-        console.error('获取推荐物品失败:', err);
+        console.error('获取热门推荐失败:', err);
       });
     },
 

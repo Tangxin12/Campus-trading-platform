@@ -991,6 +991,12 @@ const deleteBrowseHistoryItem = async (event) => {
     };
   } catch (e) {
     console.error('【云函数】deleteBrowseHistoryItem错误:', e);
+    if (e.errCode === -502005 || e.errMsg && e.errMsg.includes('not exists')) {
+      return {
+        success: false,
+        errMsg: "记录不存在"
+      };
+    }
     return {
       success: false,
       errMsg: e.message
@@ -1021,6 +1027,14 @@ const clearBrowseHistory = async (event) => {
     };
   } catch (e) {
     console.error('【云函数】clearBrowseHistory错误:', e);
+    if (e.errCode === -502005 || e.errMsg && e.errMsg.includes('not exists')) {
+      return {
+        success: true,
+        data: {
+          message: "清空成功"
+        }
+      };
+    }
     return {
       success: false,
       errMsg: e.message

@@ -27,7 +27,7 @@ Page({
         wx.hideLoading();
         if (res.result.success) {
           let history = res.result.data.items || [];
-          this.convertImageUrls(history).then(convertedHistory => {
+          imageUtils.convertImageUrls(history).then(convertedHistory => {
             this.setData({
               browseHistory: convertedHistory
             });
@@ -42,21 +42,7 @@ Page({
         this.setData({ browseHistory: [] });
       });
     },
-  
-    convertImageUrls: async function(items) {
-      const list = [];
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        try {
-          item.imageUrl = await imageUtils.getTempFileUrl(item.image || '');
-        } catch (e) {
-          item.imageUrl = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square';
-        }
-        list.push(item);
-      }
-      return list;
-    },
-  
+
     viewItemDetail: function(e) {
       const id = e.currentTarget.dataset.id;
       if (!id) return wx.showToast({ title: 'ID缺失', icon: 'none' });

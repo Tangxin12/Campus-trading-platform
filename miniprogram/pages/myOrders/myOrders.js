@@ -24,9 +24,42 @@ Page({
   },
   
     onShow: function() {
-      // 每次显示页面时刷新订单
-      this.setData({ page: 1, orders: [] });
-      this.loadOrders();
+      this.refreshOrders();
+    },
+    
+    refreshOrders: function() {
+      if (this.data.orders.length === 0) {
+        this.loadOrders();
+      } else {
+        this.updateOrderStatuses();
+      }
+    },
+    
+    updateOrderStatuses: function() {
+      const userInfo = this.data.userInfo;
+      const userId = userInfo ? userInfo._id : '';
+      
+      wx.cloud.callFunction({
+        name: 'orderFunctions',
+        data: {
+          type: 'getOrders',
+          status: this.data.activeTab === 'all' ? '' : this.data.activeTab,
+          page: 1,
+          pageSize: this.data.orders.length,
+          userId: userId
+        }
+      }).then(res => {
+        if (res.result.success) {
+          let newOrders = res.result.data.orders;
+          imageUtils.convertOrderImageUrls(newOrders).then(convertedOrders => {
+            this.setData({
+              orders: convertedOrders
+            });
+          });
+        }
+      }).catch(err => {
+        console.error('刷新订单状态失败:', err);
+      });
     },
   
     // 切换标签
