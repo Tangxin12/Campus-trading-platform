@@ -371,6 +371,190 @@ wx.cloud.callFunction({
 }
 ```
 
+### 6. 智能推荐
+
+**接口类型**：`getRecommendItems`
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| type | string | 是 | 固定值：`getRecommendItems` |
+| categories | array | 否 | 分类列表（基于浏览历史提取） |
+| excludeIds | array | 否 | 排除的商品ID列表（已浏览过的） |
+| limit | number | 否 | 推荐数量（默认：6） |
+
+**请求示例**：
+```json
+{
+  "type": "getRecommendItems",
+  "categories": ["数码产品", "图书文具"],
+  "excludeIds": ["item001", "item002"],
+  "limit": 6
+}
+```
+
+**成功响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "_id": "item003",
+        "name": "iPad Pro",
+        "price": 4500,
+        "image": "cloud://cloud1-xxx/goods/ipad.jpg",
+        "category": "数码产品",
+        "likes": 20,
+        "views": 150
+      }
+    ],
+    "total": 6
+  }
+}
+```
+
+### 7. 记录浏览历史
+
+**接口类型**：`recordBrowseHistory`
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| type | string | 是 | 固定值：`recordBrowseHistory` |
+| itemId | string | 是 | 商品ID |
+| itemName | string | 是 | 商品名称 |
+| category | string | 是 | 商品分类 |
+| price | number | 是 | 商品价格 |
+| image | string | 是 | 商品图片（cloud://） |
+| userId | string | 否 | 用户ID（可选，不传则使用openid） |
+
+**请求示例**：
+```json
+{
+  "type": "recordBrowseHistory",
+  "itemId": "item001",
+  "itemName": "iPhone 13",
+  "category": "数码产品",
+  "price": 3500,
+  "image": "cloud://cloud1-xxx/goods/iphone13.jpg",
+  "userId": "abc123"
+}
+```
+
+**成功响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "message": "浏览记录保存成功"
+  }
+}
+```
+
+### 8. 获取浏览历史
+
+**接口类型**：`getUserBrowseHistory`
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| type | string | 是 | 固定值：`getUserBrowseHistory` |
+| userId | string | 否 | 用户ID（可选，不传则使用openid） |
+
+**请求示例**：
+```json
+{
+  "type": "getUserBrowseHistory",
+  "userId": "abc123"
+}
+```
+
+**成功响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "_id": "history001",
+        "itemId": "item001",
+        "itemName": "iPhone 13",
+        "category": "数码产品",
+        "price": 3500,
+        "image": "cloud://cloud1-xxx/goods/iphone13.jpg",
+        "createdAt": "2024-01-15T12:00:00.000Z"
+      }
+    ],
+    "total": 10
+  }
+}
+```
+
+### 9. 删除单条浏览记录
+
+**接口类型**：`deleteBrowseHistoryItem`
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| type | string | 是 | 固定值：`deleteBrowseHistoryItem` |
+| historyId | string | 是 | 浏览记录ID |
+| userId | string | 否 | 用户ID（可选，不传则使用openid） |
+
+**请求示例**：
+```json
+{
+  "type": "deleteBrowseHistoryItem",
+  "historyId": "history001",
+  "userId": "abc123"
+}
+```
+
+**成功响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "message": "删除成功"
+  }
+}
+```
+
+### 10. 清空浏览历史
+
+**接口类型**：`clearBrowseHistory`
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| type | string | 是 | 固定值：`clearBrowseHistory` |
+| userId | string | 否 | 用户ID（可选，不传则使用openid） |
+
+**请求示例**：
+```json
+{
+  "type": "clearBrowseHistory",
+  "userId": "abc123"
+}
+```
+
+**成功响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "message": "清空成功",
+    "deletedCount": 10
+  }
+}
+```
+
 ---
 
 ## 三、订单管理接口
