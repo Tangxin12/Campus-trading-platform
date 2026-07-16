@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
     data: {
       // 校区数据
@@ -57,80 +59,18 @@ Page({
     // 加载顶部测试图片（你的bag.jpg）
     loadTestImage() {
       const fileID = 'cloud://cloud1-7gc4fmm813ecee0f.636c-cloud1-7gc4fmm813ecee0f-1404634949/goods/bag.jpg';
-      this.getTempFileUrl(fileID).then(tempUrl => {
+      imageUtils.getTempFileUrl(fileID).then(tempUrl => {
         this.setData({
           testImageUrl: tempUrl
         });
       }).catch(err => {
         console.error('测试图片加载失败:', err);
-        // 失败时使用默认图片兜底
         this.setData({
           testImageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beige%20handbag&image_size=square'
         });
       });
     },
-  
-    // 通用获取临时链接的方法（核心）
-    getTempFileUrl(fileID) {
-      return new Promise((resolve, reject) => {
-        // 如果不是cloud://路径，直接返回
-        if (!fileID || !fileID.startsWith('cloud://')) {
-          resolve(fileID);
-          return;
-        }
-  
-        wx.cloud.callFunction({
-          name: 'getTempFileUrl', // 你部署的云函数名称
-          data: {
-            fileID: fileID
-          }
-        }).then(res => {
-          console.log('获取临时链接结果:', res);
-          if (res.result.success) {
-            resolve(res.result.tempFileURL);
-          } else {
-            reject(new Error(res.result.message || '获取临时链接失败'));
-          }
-        }).catch(err => {
-          reject(new Error('云函数调用失败: ' + err.message));
-        });
-      });
-    },
-  
-    // 批量转换图片URL
-    convertImageUrls: async function(items) {
-      const convertedItems = JSON.parse(JSON.stringify(items));
-      
-      // 遍历所有物品，批量转换图片链接
-      for (let i = 0; i < convertedItems.length; i++) {
-        const item = convertedItems[i];
-        
-        // 转换物品主图
-        if (item.image) {
-          try {
-            item.image = await this.getTempFileUrl(item.image);
-          } catch (err) {
-            console.error(`物品${i}图片转换失败:`, err);
-            // 失败时使用默认图片兜底
-            item.image = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square';
-          }
-        }
-        
-        // 转换发布者头像（如果有cloud://链接）
-        if (item.avatar) {
-          try {
-            item.avatar = await this.getTempFileUrl(item.avatar);
-          } catch (err) {
-            console.error(`物品${i}头像转换失败:`, err);
-            item.avatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
-          }
-        }
-      }
-      
-      console.log('【调试】转换后的图片数据:', convertedItems);
-      return convertedItems;
-    },
-  
+
     // 获取置换物品列表（返回Promise便于调试）
     getExchangeItems: function() {
       return new Promise((resolve, reject) => {
@@ -156,7 +96,7 @@ Page({
             let items = res.result.data.items || [];
             console.log('【列表调试】获取到物品:', items.length, '条', '分类:', this.data.currentCategory, '排序:', this.data.currentSort);
             
-            this.convertImageUrls(items).then(convertedItems => {
+            imageUtils.convertImageUrls(items).then(convertedItems => {
               this.setData({
                 goodsList: this.data.currentPage === 1 ? convertedItems : [...this.data.goodsList, ...convertedItems],
                 loading: false
@@ -197,7 +137,7 @@ Page({
       }).then(res => {
         if (res.result.success) {
           let items = res.result.data.items;
-          this.convertImageUrls(items).then(convertedItems => {
+          imageUtils.convertImageUrls(items).then(convertedItems => {
             this.setData({
               hotList: convertedItems
             });
@@ -230,7 +170,7 @@ Page({
         if (res.result.success) {
           let items = res.result.data.items;
           console.log('【智能推荐】获取到推荐物品:', items.length, '条');
-          this.convertImageUrls(items).then(convertedItems => {
+          imageUtils.convertImageUrls(items).then(convertedItems => {
             this.setData({
               recommendList: convertedItems
             });
@@ -302,7 +242,7 @@ Page({
           console.log('【搜索调试】匹配到物品数量:', items.length, '物品列表:', items);
           
           // 转换图片链接
-          this.convertImageUrls(items).then(convertedItems => {
+          imageUtils.convertImageUrls(items).then(convertedItems => {
             this.setData({
               goodsList: convertedItems, // 覆盖原有列表
               currentPage: 1 // 重置页码

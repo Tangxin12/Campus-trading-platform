@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
   data: {
     userInfo: {
@@ -36,8 +38,9 @@ Page({
     const userInfo = wx.getStorageSync('userInfo');
     
     if (userInfo && userInfo._id) {
-      this.convertAvatarUrl(userInfo).then(convertedUserInfo => {
-        this.setData({ userInfo: convertedUserInfo });
+      imageUtils.getTempFileUrl(userInfo.avatar || '').then(avatarUrl => {
+        userInfo.avatar = avatarUrl || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
+        this.setData({ userInfo: userInfo });
       });
     } else {
       const defaultUserInfo = {
@@ -62,43 +65,6 @@ Page({
         });
       }, 1500);
     }
-  },
-  
-  getTempFileUrl: function(fileID) {
-    return new Promise((resolve, reject) => {
-      if (!fileID || !fileID.startsWith('cloud://')) {
-        resolve(fileID);
-        return;
-      }
-      
-      wx.cloud.callFunction({
-        name: 'getTempFileUrl',
-        data: { fileID: fileID }
-      }).then(res => {
-        if (res.result.success) {
-          resolve(res.result.tempFileURL);
-        } else {
-          reject(new Error(res.result.message || '获取临时链接失败'));
-        }
-      }).catch(err => {
-        reject(new Error('云函数调用失败: ' + err.message));
-      });
-    });
-  },
-  
-  convertAvatarUrl: async function(userInfo) {
-    const convertedUserInfo = Object.assign({}, userInfo);
-    
-    if (convertedUserInfo.avatar && convertedUserInfo.avatar.startsWith('cloud://')) {
-      try {
-        convertedUserInfo.avatar = await this.getTempFileUrl(convertedUserInfo.avatar);
-      } catch (err) {
-        console.error('转换头像URL失败:', err);
-        convertedUserInfo.avatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
-      }
-    }
-    
-    return convertedUserInfo;
   },
   
   chooseAvatar: function() {

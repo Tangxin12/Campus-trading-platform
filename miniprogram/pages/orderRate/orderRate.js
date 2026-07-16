@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
   data: {
     orderId: '',
@@ -34,7 +36,8 @@ Page({
         const targetUserName = isSeller ? order.buyerName : order.sellerName;
         const targetUserAvatar = isSeller ? order.buyerAvatar : order.sellerAvatar;
         
-        this.convertImageUrls(order).then(convertedOrder => {
+        imageUtils.convertOrderImageUrls([order]).then(convertedOrders => {
+          const convertedOrder = convertedOrders[0];
           this.setData({
             order: convertedOrder,
             isSeller: isSeller,
@@ -50,58 +53,6 @@ Page({
       console.error('加载订单失败:', err);
       wx.showToast({ title: '加载失败', icon: 'none' });
     });
-  },
-
-  getTempFileUrl: function(fileID) {
-    return new Promise((resolve, reject) => {
-      if (!fileID || !fileID.startsWith('cloud://')) {
-        resolve(fileID);
-        return;
-      }
-      
-      wx.cloud.callFunction({
-        name: 'getTempFileUrl',
-        data: { fileID: fileID }
-      }).then(res => {
-        if (res.result.success) {
-          resolve(res.result.tempFileURL);
-        } else {
-          reject(new Error(res.result.message));
-        }
-      }).catch(err => {
-        reject(new Error('云函数调用失败: ' + err.message));
-      });
-    });
-  },
-
-  convertImageUrls: async function(order) {
-    const convertedOrder = Object.assign({}, order);
-    
-    if (convertedOrder.itemImage) {
-      try {
-        convertedOrder.itemImage = await this.getTempFileUrl(convertedOrder.itemImage);
-      } catch (err) {
-        convertedOrder.itemImage = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square';
-      }
-    }
-    
-    if (convertedOrder.sellerAvatar) {
-      try {
-        convertedOrder.sellerAvatar = await this.getTempFileUrl(convertedOrder.sellerAvatar);
-      } catch (err) {
-        convertedOrder.sellerAvatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
-      }
-    }
-    
-    if (convertedOrder.buyerAvatar) {
-      try {
-        convertedOrder.buyerAvatar = await this.getTempFileUrl(convertedOrder.buyerAvatar);
-      } catch (err) {
-        convertedOrder.buyerAvatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
-      }
-    }
-    
-    return convertedOrder;
   },
 
   selectStar: function(e) {

@@ -13,6 +13,7 @@ const createCollections = async () => {
     await db.createCollection("users");
     await db.createCollection("collections");
     await db.createCollection("exchangeRequests");
+    await db.createCollection("browseHistory");
     return {
       success: true,
       message: "创建集合成功"
@@ -855,6 +856,178 @@ const updateItem = async (event) => {
 //     };
 //   }
 // };
+// 记录浏览历史
+const recordBrowseHistory = async (event) => {
+  try {
+    const { itemId, itemName, category, price, image, userId } = event;
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    
+    console.log('【云函数】recordBrowseHistory被调用，itemId:', itemId, 'userId:', userId);
+    
+    const userToUse = userId || openid;
+    
+    // 先删除该用户之前浏览过的同一件物品的记录（避免重复）
+    try {
+      await db.collection("browseHistory").where({
+        userId: userToUse,
+        itemId: itemId
+      }).remove();
+    } catch (e) {
+      console.log('【云函数】删除重复记录失败（可能集合不存在）:', e.message);
+      if (e.errCode === -502005 || e.errMsg && e.errMsg.includes('not exists')) {
+        await db.createCollection("browseHistory");
+      }
+    }
+    
+    // 添加新的浏览记录
+    await db.collection("browseHistory").add({
+      data: {
+        userId: userToUse,
+        itemId: itemId,
+        itemName: itemName,
+        category: category,
+        price: price || 0,
+        image: image || '',
+        createdAt: db.serverDate()
+      }
+    });
+    
+    // 保留最近20条浏览记录
+    const historyList = await db.collection("browseHistory").where({
+      userId: userToUse
+    }).orderBy("createdAt", "desc").get();
+    
+    if (historyList.data.length > 20) {
+      const toDelete = historyList.data.slice(20);
+      for (const item of toDelete) {
+        await db.collection("browseHistory").doc(item._id).remove();
+      }
+    }
+    
+    return {
+      success: true,
+      data: {
+        message: "浏览记录保存成功"
+      }
+    };
+  } catch (e) {
+    console.error('【云函数】recordBrowseHistory错误:', e);
+    return {
+      success: false,
+      errMsg: e.message
+    };
+  }
+};
+
+// 获取用户浏览历史
+const getUserBrowseHistory = async (event) => {
+  try {
+    const { userId } = event;
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    
+    console.log('【云函数】getUserBrowseHistory被调用，userId:', userId);
+    
+    const userToUse = userId || openid;
+    
+    const history = await db.collection("browseHistory").where({
+      userId: userToUse
+    }).orderBy("createdAt", "desc").limit(20).get();
+    
+    return {
+      success: true,
+      data: {
+        items: history.data,
+        total: history.data.length
+      }
+    };
+  } catch (e) {
+    console.error('【云函数】getUserBrowseHistory错误:', e);
+    if (e.errCode === -502005 || e.errMsg && e.errMsg.includes('not exists')) {
+      await db.createCollection("browseHistory");
+      return {
+        success: true,
+        data: {
+          items: [],
+          total: 0
+        }
+      };
+    }
+    return {
+      success: false,
+      errMsg: e.message
+    };
+  }
+};
+
+// 删除单条浏览记录
+const deleteBrowseHistoryItem = async (event) => {
+  try {
+    const { historyId, userId } = event;
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    
+    console.log('【云函数】deleteBrowseHistoryItem被调用，historyId:', historyId);
+    
+    const userToUse = userId || openid;
+    
+    const record = await db.collection("browseHistory").doc(historyId).get();
+    
+    if (!record.data || record.data.userId !== userToUse) {
+      return {
+        success: false,
+        errMsg: "无权限删除此记录"
+      };
+    }
+    
+    await db.collection("browseHistory").doc(historyId).remove();
+    
+    return {
+      success: true,
+      data: {
+        message: "删除成功"
+      }
+    };
+  } catch (e) {
+    console.error('【云函数】deleteBrowseHistoryItem错误:', e);
+    return {
+      success: false,
+      errMsg: e.message
+    };
+  }
+};
+
+// 清空浏览历史
+const clearBrowseHistory = async (event) => {
+  try {
+    const { userId } = event;
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    
+    console.log('【云函数】clearBrowseHistory被调用，userId:', userId);
+    
+    const userToUse = userId || openid;
+    
+    await db.collection("browseHistory").where({
+      userId: userToUse
+    }).remove();
+    
+    return {
+      success: true,
+      data: {
+        message: "清空成功"
+      }
+    };
+  } catch (e) {
+    console.error('【云函数】clearBrowseHistory错误:', e);
+    return {
+      success: false,
+      errMsg: e.message
+    };
+  }
+};
+
 // 更新用户信息（修复版）
 const updateUserInfo = async (event) => {
     try {
@@ -991,6 +1164,14 @@ exports.main = async (event, context) => {
       return await updateItem(event);
     case "updateUserInfo":
       return await updateUserInfo(event);
+    case "recordBrowseHistory":
+      return await recordBrowseHistory(event);
+    case "getUserBrowseHistory":
+      return await getUserBrowseHistory(event);
+    case "deleteBrowseHistoryItem":
+      return await deleteBrowseHistoryItem(event);
+    case "clearBrowseHistory":
+      return await clearBrowseHistory(event);
     default:
       console.error('【云函数】未知操作类型:', type);
       return {

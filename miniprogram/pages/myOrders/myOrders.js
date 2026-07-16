@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
     data: {
       activeTab: 'all',
@@ -25,77 +27,6 @@ Page({
       // 每次显示页面时刷新订单
       this.setData({ page: 1, orders: [] });
       this.loadOrders();
-    },
-  
-    // 【核心复用】通用获取临时链接的方法（和首页完全一致）
-    getTempFileUrl(fileID) {
-      return new Promise((resolve, reject) => {
-        // 如果不是cloud://路径，直接返回
-        if (!fileID || !fileID.startsWith('cloud://')) {
-          resolve(fileID);
-          return;
-        }
-  
-        wx.cloud.callFunction({
-          name: 'getTempFileUrl', // 你部署的云函数名称
-          data: {
-            fileID: fileID
-          }
-        }).then(res => {
-          console.log('获取临时链接结果:', res);
-          if (res.result.success) {
-            resolve(res.result.tempFileURL);
-          } else {
-            reject(new Error(res.result.message || '获取临时链接失败'));
-          }
-        }).catch(err => {
-          reject(new Error('云函数调用失败: ' + err.message));
-        });
-      });
-    },
-  
-    // 【核心复用】批量转换订单图片URL（参考首页convertImageUrls逻辑）
-    convertOrderImageUrls: async function(orders) {
-      const convertedOrders = JSON.parse(JSON.stringify(orders));
-      
-      // 遍历所有订单，转换图片链接
-      for (let i = 0; i < convertedOrders.length; i++) {
-        const order = convertedOrders[i];
-        
-        // 转换商品图片
-        if (order.itemImage) {
-          try {
-            order.itemImage = await this.getTempFileUrl(order.itemImage);
-          } catch (err) {
-            console.error(`订单${i}商品图片转换失败:`, err);
-            // 失败时使用默认图片兜底
-            order.itemImage = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square';
-          }
-        }
-        
-        // 转换卖家头像
-        if (order.sellerAvatar) {
-          try {
-            order.sellerAvatar = await this.getTempFileUrl(order.sellerAvatar);
-          } catch (err) {
-            console.error(`订单${i}卖家头像转换失败:`, err);
-            order.sellerAvatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
-          }
-        }
-        
-        // 转换买家头像
-        if (order.buyerAvatar) {
-          try {
-            order.buyerAvatar = await this.getTempFileUrl(order.buyerAvatar);
-          } catch (err) {
-            console.error(`订单${i}买家头像转换失败:`, err);
-            order.buyerAvatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20placeholder%20circular%20portrait&image_size=square';
-          }
-        }
-      }
-      
-      console.log('【订单调试】转换后的图片数据:', convertedOrders);
-      return convertedOrders;
     },
   
     // 切换标签
@@ -147,7 +78,7 @@ Page({
           }
           
           // 转换订单中的所有图片链接（复用首页逻辑）
-          this.convertOrderImageUrls(newOrders).then(convertedOrders => {
+          imageUtils.convertOrderImageUrls(newOrders).then(convertedOrders => {
             const orders = this.data.page === 1 ? convertedOrders : [...this.data.orders, ...convertedOrders];
             
             this.setData({

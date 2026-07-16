@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
     data: {
       browseHistory: []
@@ -12,14 +14,47 @@ Page({
     },
   
     loadBrowseHistory: function() {
-      try {
-        const history = wx.getStorageSync('browseHistory') || [];
-        this.setData({
-          browseHistory: history
-        });
-      } catch (err) {
-        console.error('加载浏览历史失败:', err);
+      wx.showLoading({ title: '加载中...' });
+      
+      const userInfo = wx.getStorageSync('userInfo');
+      wx.cloud.callFunction({
+        name: 'exchangeFunctions',
+        data: {
+          type: 'getUserBrowseHistory',
+          userId: userInfo ? userInfo._id : ''
+        }
+      }).then(res => {
+        wx.hideLoading();
+        if (res.result.success) {
+          let history = res.result.data.items || [];
+          this.convertImageUrls(history).then(convertedHistory => {
+            this.setData({
+              browseHistory: convertedHistory
+            });
+          });
+        } else {
+          console.error('获取浏览历史失败:', res.result.errMsg);
+          this.setData({ browseHistory: [] });
+        }
+      }).catch(err => {
+        wx.hideLoading();
+        console.error('获取浏览历史失败:', err);
+        this.setData({ browseHistory: [] });
+      });
+    },
+  
+    convertImageUrls: async function(items) {
+      const list = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        try {
+          item.imageUrl = await imageUtils.getTempFileUrl(item.image || '');
+        } catch (e) {
+          item.imageUrl = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square';
+        }
+        list.push(item);
       }
+      return list;
     },
   
     viewItemDetail: function(e) {
@@ -30,6 +65,7 @@ Page({
   
     deleteItem: async function(e) {
       const id = e.currentTarget.dataset.id;
+      const historyId = e.currentTarget.dataset.historyId;
       if (!id) return wx.showToast({ title: 'ID缺失', icon: 'none' });
   
       const confirm = await wx.showModal({
@@ -39,18 +75,28 @@ Page({
   
       if (!confirm.confirm) return;
   
-      try {
-        const history = wx.getStorageSync('browseHistory') || [];
-        const newHistory = history.filter(item => item._id !== id);
-        wx.setStorageSync('browseHistory', newHistory);
-        this.setData({
-          browseHistory: newHistory
-        });
-        wx.showToast({ title: '删除成功', icon: 'success' });
-      } catch (err) {
-        console.error('删除浏览记录失败:', err);
-        wx.showToast({ title: '删除失败', icon: 'none' });
-      }
+      const userInfo = wx.getStorageSync('userInfo');
+      wx.showLoading({ title: '删除中...' });
+      
+      wx.cloud.callFunction({
+        name: 'exchangeFunctions',
+        data: {
+          type: 'deleteBrowseHistoryItem',
+          historyId: historyId,
+          userId: userInfo ? userInfo._id : ''
+        }
+      }).then(res => {
+        wx.hideLoading();
+        if (res.result.success) {
+          wx.showToast({ title: '删除成功', icon: 'success' });
+          this.loadBrowseHistory();
+        } else {
+          wx.showToast({ title: '删除失败', icon: 'none' });
+        }
+      }).catch(err => {
+        wx.hideLoading();
+        wx.showToast({ title: '网络错误', icon: 'none' });
+      });
     },
   
     clearHistory: async function() {
@@ -61,16 +107,27 @@ Page({
   
       if (!confirm.confirm) return;
   
-      try {
-        wx.setStorageSync('browseHistory', []);
-        this.setData({
-          browseHistory: []
-        });
-        wx.showToast({ title: '清空成功', icon: 'success' });
-      } catch (err) {
-        console.error('清空浏览历史失败:', err);
-        wx.showToast({ title: '清空失败', icon: 'none' });
-      }
+      const userInfo = wx.getStorageSync('userInfo');
+      wx.showLoading({ title: '清空中...' });
+      
+      wx.cloud.callFunction({
+        name: 'exchangeFunctions',
+        data: {
+          type: 'clearBrowseHistory',
+          userId: userInfo ? userInfo._id : ''
+        }
+      }).then(res => {
+        wx.hideLoading();
+        if (res.result.success) {
+          wx.showToast({ title: '清空成功', icon: 'success' });
+          this.setData({ browseHistory: [] });
+        } else {
+          wx.showToast({ title: '清空失败', icon: 'none' });
+        }
+      }).catch(err => {
+        wx.hideLoading();
+        wx.showToast({ title: '网络错误', icon: 'none' });
+      });
     },
   
     formatTime: function(time) {

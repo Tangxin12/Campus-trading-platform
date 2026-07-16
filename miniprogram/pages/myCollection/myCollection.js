@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
     data: {
       collections: []
@@ -11,44 +13,6 @@ Page({
       this.getCollections().finally(() => {
         wx.stopPullDownRefresh();
       });
-    },
-  
-    // 👇 和首页完全一样的获取临时链接方法
-    getTempFileUrl(fileID) {
-      return new Promise((resolve, reject) => {
-        if (!fileID || !fileID.startsWith('cloud://')) {
-          resolve(fileID);
-          return;
-        }
-  
-        wx.cloud.callFunction({
-          name: 'getTempFileUrl',
-          data: { fileID: fileID }
-        }).then(res => {
-          if (res.result.success) {
-            resolve(res.result.tempFileURL);
-          } else {
-            reject(res.result.message);
-          }
-        }).catch(err => {
-          reject(err);
-        });
-      });
-    },
-  
-    // 👇 和首页一样批量转图片
-    async convertImageUrls(items) {
-      const list = JSON.parse(JSON.stringify(items));
-      for (let i = 0; i < list.length; i++) {
-        const item = list[i];
-        const img = item.itemImage || item.image;
-        try {
-          item.imageUrl = await this.getTempFileUrl(img);
-        } catch (e) {
-          item.imageUrl = "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20placeholder%20image&image_size=square";
-        }
-      }
-      return list;
     },
   
     // 👇 获取收藏列表
@@ -71,7 +35,7 @@ Page({
   
         let collections = res.result.data.items || [];
         // ✅ 关键：用首页的方式转图片
-        collections = await this.convertImageUrls(collections);
+        collections = await imageUtils.convertImageUrls(collections);
         this.setData({ collections });
   
       } catch (err) {

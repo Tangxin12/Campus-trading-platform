@@ -1,3 +1,5 @@
+const imageUtils = require('../../utils/imageUtils.js');
+
 Page({
     data: {
   item: {},
@@ -36,7 +38,7 @@ Page({
         console.log('【调试】原始物品数据:', item);
         
         // 修复：批量转换所有图片（主图+轮播图数组）
-        this.convertAllImageUrls(item).then(convertedItem => {
+        imageUtils.convertAllImageUrls(item).then(convertedItem => {
           console.log('【调试】转换后物品数据:', convertedItem);
           this.setData({
             item: convertedItem,
@@ -88,63 +90,6 @@ Page({
         }
       }).catch(err => {
         console.error('【调试】检查收藏状态失败:', err);
-      });
-    },
-  
-    // 修复：批量转换所有图片（主图+轮播图数组）
-    convertAllImageUrls: function(item) {
-      return new Promise(async (resolve) => {
-        const convertedItem = JSON.parse(JSON.stringify(item));
-        
-        // 1. 转换主图 image
-        if (convertedItem.image && convertedItem.image.startsWith('cloud://')) {
-          convertedItem.image = await this.getSingleTempUrl(convertedItem.image);
-        }
-        
-        // 2. 转换轮播图数组 images
-        if (convertedItem.images && Array.isArray(convertedItem.images) && convertedItem.images.length > 0) {
-          const convertedImages = [];
-          for (let img of convertedItem.images) {
-            if (img && img.startsWith('cloud://')) {
-              convertedImages.push(await this.getSingleTempUrl(img));
-            } else {
-              convertedImages.push(img || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square');
-            }
-          }
-          convertedItem.images = convertedImages;
-        } else {
-          // 无images数组时，用主图构建数组
-          convertedItem.images = [convertedItem.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square'];
-        }
-        
-        // 3. 转换发布者头像
-        if (convertedItem.avatar && convertedItem.avatar.startsWith('cloud://')) {
-          convertedItem.avatar = await this.getSingleTempUrl(convertedItem.avatar);
-        }
-        
-        resolve(convertedItem);
-      });
-    },
-  
-    // 通用方法：获取单个cloud://链接的临时URL
-    getSingleTempUrl: function(fileID) {
-      return new Promise((resolve) => {
-        wx.cloud.callFunction({
-          name: 'getTempFileUrl', // 复用你已部署的获取临时链接云函数
-          data: {
-            fileID: fileID
-          }
-        }).then(res => {
-          if (res.result.success) {
-            resolve(res.result.tempFileURL);
-          } else {
-            console.error('【调试】获取临时链接失败:', res.result.message);
-            resolve('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square');
-          }
-        }).catch(err => {
-          console.error('【调试】调用云函数失败:', err);
-          resolve('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20camera&image_size=square');
-        });
       });
     },
   
@@ -361,6 +306,25 @@ Page({
         
         wx.setStorageSync('browseHistory', newHistory);
         console.log('【智能推荐】浏览历史记录成功:', newHistory.length, '条');
+        
+        // 同时保存到数据库（持久化）
+        const userInfo = wx.getStorageSync('userInfo');
+        wx.cloud.callFunction({
+          name: 'exchangeFunctions',
+          data: {
+            type: 'recordBrowseHistory',
+            itemId: item._id,
+            itemName: item.name,
+            category: item.category,
+            price: item.price,
+            image: item.image,
+            userId: userInfo ? userInfo._id : ''
+          }
+        }).then(res => {
+          console.log('【智能推荐】浏览历史保存到数据库成功');
+        }).catch(err => {
+          console.error('【智能推荐】浏览历史保存到数据库失败:', err);
+        });
       } catch (err) {
         console.error('【智能推荐】记录浏览历史失败:', err);
       }
