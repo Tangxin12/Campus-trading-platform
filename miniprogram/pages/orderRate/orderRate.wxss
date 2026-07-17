@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #3498db, #9b59b6);
   padding-bottom: 100rpx;
 }
 
@@ -8,9 +8,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 30rpx 24rpx;
-  background: white;
-  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+  padding: 60rpx 24rpx 30rpx;
+  background: transparent;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -18,12 +17,13 @@
 
 .header-left, .header-right {
   width: 80rpx;
+  padding-left: 20rpx;
 }
 
 .page-title {
   font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: white;
 }
 
 .rate-content {

@@ -56,6 +56,15 @@ const convertImageUrls = async function(items) {
       }
     }
     
+    if (item.itemImage) {
+      try {
+        item.itemImage = await getTempFileUrl(item.itemImage);
+      } catch (err) {
+        console.error('收藏图片转换失败:', err);
+        item.itemImage = DEFAULT_GOODS_IMAGE;
+      }
+    }
+    
     if (item.avatar) {
       try {
         item.avatar = await getTempFileUrl(item.avatar);

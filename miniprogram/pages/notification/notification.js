@@ -36,6 +36,7 @@ Page({
     console.log('通知页面加载');
     this.getUserPublishItems();
     this.getUserCollections();
+    this.getUserFollowing();
   },
   
   // 获取用户发布的物品
@@ -85,21 +86,65 @@ Page({
       console.log('获取收藏物品结果:', res);
       if (res.result?.success) {
         const collections = res.result.data.items;
-        const interactNotifications = collections.map((item, index) => ({
-          id: item._id || index + 1,
+        const collectionNotifications = collections.map((item, index) => ({
+          id: 'collect_' + (item._id || index + 1),
           icon: '❤️',
           title: '收藏成功',
-          message: `您收藏了"${item.itemName || '物品'}"，发布者：${item.publisher || '未知'}` || 0,
+          message: `您收藏了"${item.itemName || '物品'}"，发布者：${item.publisher || '未知'}`,
           time: this.formatTime(item.createdAt),
           read: false
         }));
-        this.setData({ interactNotifications });
+        this.updateInteractNotifications(collectionNotifications);
       }
     }).catch(err => {
       console.error('获取收藏物品失败:', err);
     }).finally(() => {
       wx.hideLoading();
     });
+  },
+  
+  getUserFollowing: function() {
+    wx.showLoading({ title: '加载中...' });
+    
+    wx.cloud.callFunction({
+      name: 'followFunctions',
+      data: {
+        action: 'getFollowing',
+        page: 1,
+        pageSize: 10
+      }
+    }).then(res => {
+      console.log('获取关注列表结果:', res);
+      if (res.result?.success) {
+        const follows = res.result.data.following || [];
+        const followNotifications = follows.map((item, index) => ({
+          id: 'follow_' + (item._id || index + 1),
+          icon: '👤',
+          title: '关注成功',
+          message: `您关注了${item.publisher || '用户'}`,
+          time: this.formatTime(item.createdAt),
+          read: false
+        }));
+        this.updateInteractNotifications(followNotifications);
+      }
+    }).catch(err => {
+      console.error('获取关注列表失败:', err);
+    }).finally(() => {
+      wx.hideLoading();
+    });
+  },
+  
+  updateInteractNotifications: function(newNotifications) {
+    const currentNotifications = this.data.interactNotifications || [];
+    const merged = [...currentNotifications, ...newNotifications];
+    
+    merged.sort((a, b) => {
+      const timeA = new Date(a.time);
+      const timeB = new Date(b.time);
+      return timeB - timeA;
+    });
+    
+    this.setData({ interactNotifications: merged });
   },
   
   // 格式化时间
@@ -163,9 +208,13 @@ Page({
   
   // 下拉刷新
   onPullDownRefresh: function() {
+    // 重置互动通知
+    this.setData({ interactNotifications: [] });
+    
     // 重新加载数据
     this.getUserPublishItems();
     this.getUserCollections();
+    this.getUserFollowing();
     
     // 模拟刷新数据
     setTimeout(() => {

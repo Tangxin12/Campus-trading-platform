@@ -53,8 +53,8 @@ Page({
           // 检查是否已收藏
           this.checkCollectionStatus();
           
-          // 记录浏览历史（用于智能推荐）
-          this.recordBrowseHistory(convertedItem);
+          // 记录浏览历史（用于智能推荐）- 使用原始数据的cloud://路径
+          this.recordBrowseHistory(item);
         });
       } else {
           wx.showToast({
@@ -183,17 +183,65 @@ Page({
   
       // 检查是否已关注（功能待实现）
   checkIsFollowing: function() {
-    console.log('【调试】关注功能暂未实现');
-    this.setData({ isFollowing: false });
-  },
+      const item = this.data.item;
+      const publisherId = item.publisherId || item.publisher;
+      
+      wx.cloud.callFunction({
+        name: 'followFunctions',
+        data: {
+          action: 'isFollowing',
+          publisherId: publisherId
+        }
+      }).then(res => {
+        if (res.result.success) {
+          this.setData({
+            isFollowing: res.result.data.isFollowing
+          });
+        } else {
+          console.error('检查关注状态失败:', res.result.errMsg);
+          this.setData({ isFollowing: false });
+        }
+      }).catch(err => {
+        console.error('检查关注状态失败:', err);
+        this.setData({ isFollowing: false });
+      });
+    },
 
-  // 关注/取消关注发布者（功能待实现）
-  followPublisher: function() {
-    wx.showToast({
-      title: '关注功能暂未开放',
-      icon: 'none'
-    });
-  },
+    followPublisher: function() {
+      const item = this.data.item;
+      const publisherId = item.publisherId || item.publisher;
+      const action = this.data.isFollowing ? 'unfollow' : 'follow';
+      
+      wx.cloud.callFunction({
+        name: 'followFunctions',
+        data: {
+          action: action,
+          publisherId: publisherId,
+          publisher: item.publisher
+        }
+      }).then(res => {
+        if (res.result.success) {
+          this.setData({
+            isFollowing: !this.data.isFollowing
+          });
+          wx.showToast({
+            title: action === 'follow' ? '关注成功' : '取消关注成功',
+            icon: 'success'
+          });
+        } else {
+          wx.showToast({
+            title: res.result.errMsg || '操作失败',
+            icon: 'none'
+          });
+        }
+      }).catch(err => {
+        console.error('关注操作失败:', err);
+        wx.showToast({
+          title: '操作失败',
+          icon: 'none'
+        });
+      });
+    },
   
     // 立即沟通
     contactPublisher: function() {
@@ -235,12 +283,14 @@ Page({
         
         const filteredHistory = history.filter(h => h.itemId !== item._id);
         
+        const itemImage = item.image || (item.images && item.images.length > 0 ? item.images[0] : '');
+        
         const newHistory = [{
           itemId: item._id,
           itemName: item.name,
           category: item.category,
           price: item.price,
-          image: item.image,
+          image: itemImage,
           time: Date.now()
         }, ...filteredHistory].slice(0, 20);
         
@@ -256,7 +306,7 @@ Page({
             itemName: item.name,
             category: item.category,
             price: item.price,
-            image: item.image,
+            image: itemImage,
             userId: userInfo ? userInfo._id : ''
           }
         }).then(res => {

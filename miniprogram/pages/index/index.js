@@ -30,7 +30,9 @@ Page({
       // 热门置换数据
       hotList: [],
       // 猜你喜欢推荐数据
-      recommendList: [],
+      guessRecommendList: [],
+      // 热门推荐数据
+      hotRecommendList: [],
       // 当前推荐标签
       recommendTab: 'guess',
       // 物品列表数据
@@ -180,7 +182,7 @@ Page({
               console.log('【智能推荐】获取到推荐物品:', items.length, '条');
               imageUtils.convertImageUrls(items).then(convertedItems => {
                 this.setData({
-                  recommendList: convertedItems
+                  guessRecommendList: convertedItems
                 });
               });
             }
@@ -194,22 +196,22 @@ Page({
       });
     },
     
-    // 获取热门推荐作为兜底
+    // 获取热门推荐
     getHotRecommendItems: function() {
       wx.cloud.callFunction({
         name: 'exchangeFunctions',
         data: {
-          type: 'getRecommendItems',
-          categories: [],
-          excludeIds: [],
-          limit: 6
+          type: 'getExchangeItems',
+          page: 1,
+          pageSize: 6,
+          sortBy: 'hot'
         }
       }).then(res => {
         if (res.result.success) {
           let items = res.result.data.items;
           imageUtils.convertImageUrls(items).then(convertedItems => {
             this.setData({
-              recommendList: convertedItems
+              hotRecommendList: convertedItems
             });
           });
         }
@@ -227,8 +229,14 @@ Page({
         recommendTab: tab
       });
       
-      if (tab === 'guess' && this.data.recommendList.length === 0) {
-        this.getRecommendItems();
+      if (tab === 'guess') {
+        if (this.data.guessRecommendList.length === 0) {
+          this.getRecommendItems();
+        }
+      } else if (tab === 'hot') {
+        if (this.data.hotRecommendList.length === 0) {
+          this.getHotRecommendItems();
+        }
       }
     },
   

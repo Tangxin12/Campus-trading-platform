@@ -128,7 +128,7 @@
         </view>
       </view>
       <scroll-view scroll-x="true" class="hot-scroll" show-scrollbar="false">
-        <view class="hot-item" wx:for="{{recommendTab === 'guess' ? recommendList : hotList}}" wx:key="index" data-id="{{item._id || item.id}}" bindtap="onHotItemClick">
+        <view class="hot-item" wx:for="{{recommendTab === 'guess' ? guessRecommendList : hotRecommendList}}" wx:key="index" data-id="{{item._id || item.id}}" bindtap="onHotItemClick">
           <image src="{{item.image || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20recommendation&image_size=square'}}" mode="aspectFill"></image>
           <view class="hot-item-overlay">
             <text class="hot-item-count">{{recommendTab === 'guess' ? '¥' + (item.price || 0) : (item.likes || 0) + '人想换'}}</text>

@@ -613,15 +613,26 @@ const getRecommendItems = async (event) => {
       }
     }
     
-    // 策略2：热门商品补充（如果推荐数量不足）
+    // 策略2：没有浏览历史时，按创建时间推荐最新物品（与热门推荐区分）
+    // 如果有浏览历史但推荐数量不足，补充热门商品
     if (recommendItems.length < limit) {
-      console.log('【智能推荐】策略2：热门商品补充');
-      const hotItems = await db.collection("exchangeItem").where({
+      console.log('【智能推荐】策略2：补充推荐');
+      let fillQuery = db.collection("exchangeItem").where({
         status: "active",
         _id: _.nin([...usedIds])
-      }).orderBy("likes", "desc").orderBy("views", "desc").limit(limit - recommendItems.length).get();
+      });
       
-      hotItems.data.forEach(item => {
+      // 如果没有浏览历史（categories为空），按创建时间排序（最新物品）
+      // 如果有浏览历史，按热门排序补充
+      if (categories && categories.length > 0) {
+        fillQuery = fillQuery.orderBy("likes", "desc").orderBy("views", "desc");
+      } else {
+        fillQuery = fillQuery.orderBy("createdAt", "desc");
+      }
+      
+      const fillItems = await fillQuery.limit(limit - recommendItems.length).get();
+      
+      fillItems.data.forEach(item => {
         if (!usedIds.has(item._id)) {
           recommendItems.push(item);
         }
