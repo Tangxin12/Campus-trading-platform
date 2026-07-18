@@ -69,7 +69,7 @@
 
 1. **克隆项目**：
    ```bash
-   git clone <项目仓库地址>
+   git clone <https://github.com/Tangxin12/Campus-trading-platform.git>
    cd preUsed
    ```
 
